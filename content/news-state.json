@@ -1,0 +1,61 @@
+{
+  "_comment": "Trạng thái 6 tin đang hiển thị ở mục 'Tin tức & Sự kiện' trên index.html. Được tự động đọc/ghi bởi routine cập nhật tin hàng ngày (7h sáng). Nguồn: American Go E-Journal (usgo.org, page_id=5). Không sửa tay trừ khi cần reset.",
+  "source_url": "https://www.usgo.org/content.aspx?page_id=3&club_id=454497",
+  "last_checked": "2026-09-04T17:30:00+07:00",
+  "items": [
+    {
+      "item_id": 139348,
+      "date": "2026-08-27",
+      "date_display": "27.08",
+      "title_en": "Cartagena to Host 8th Latin American Go Congress",
+      "title_vi": "Cartagena (Colombia) đăng cai Đại hội Cờ vây Mỹ Latinh lần thứ 8",
+      "cat_vi": "Lịch giải quốc tế",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=139348"
+    },
+    {
+      "item_id": 139152,
+      "date": "2026-08-25",
+      "date_display": "25.08",
+      "title_en": "PSA from the AGA Fair Play Committee Regarding AI Use in AGA Online Tournaments",
+      "title_vi": "Hiệp hội Cờ vây Mỹ (AGA) cảnh báo tình trạng dùng AI gian lận ở giải trực tuyến",
+      "cat_vi": "Fair-play",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=139152"
+    },
+    {
+      "item_id": 138817,
+      "date": "2026-08-12",
+      "date_display": "12.08",
+      "title_en": "WSJ: A Decade After Move 37, AI's Surprises Are Everywhere",
+      "title_vi": "WSJ: Một thập kỷ sau nước đi 37 huyền thoại, AI vẫn tiếp tục gây bất ngờ",
+      "cat_vi": "AI & Cờ vây",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=138817"
+    },
+    {
+      "item_id": 138416,
+      "date": "2026-08-03",
+      "date_display": "03.08",
+      "title_en": "Kwon Wins U.S. Open Masters Title After Dramatic Three-Way Tie",
+      "title_vi": "Kwon Hyuk-Joon vô địch U.S. Open Masters sau play-off ba bên kịch tính",
+      "cat_vi": "Giải đấu quốc tế",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=138416"
+    },
+    {
+      "item_id": 137673,
+      "date": "2026-07-14",
+      "date_display": "14.07",
+      "title_en": "Shin Jinseo, Ding Hao to debut AI-opening format in PlayGo championship",
+      "title_vi": "Shin Jinseo & Ding Hao ra mắt thể thức khai cuộc hỗ trợ AI tại giải PlayGo",
+      "cat_vi": "Kỳ thủ hàng đầu",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=137673"
+    },
+    {
+      "item_id": 137318,
+      "date": "2026-07-08",
+      "date_display": "08.07",
+      "title_en": "IGF Revokes WAGC Finish Following Anti-Doping Violation",
+      "title_vi": "IGF hủy kết quả một kỳ thủ tại WAGC vì vi phạm quy định chống doping",
+      "cat_vi": "Liên đoàn quốc tế",
+      "href": "https://www.usgo.org/content.aspx?page_id=5&club_id=454497&item_id=137318"
+    }
+  ]
+}
