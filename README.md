@@ -1,6 +1,6 @@
 # Go Đà Nẵng — kỳ quán số của người chơi cờ Vây
 
-Kỳ quán của những người chơi cờ Vây Đà Nẵng, nơi từng cuộc đối cục được ghi lại. Giống Strava cho kỳ thủ: không chơi online, mà **ghi lại những ván đã đánh thật** (tại CLB, quán trà, nhà bạn bè), để đối thủ xác nhận, rồi cả cộng đồng cùng nhìn lại.
+Sổ ghi ván của dân cờ Vây Đà Nẵng: đánh xong ghi lại, đối thủ gật đầu là xong. Giống Strava cho kỳ thủ: không chơi online, mà **ghi lại những ván đã đánh thật** (tại CLB, quán trà, nhà bạn bè), để đối thủ xác nhận, rồi cả cộng đồng cùng nhìn lại.
 
 Tài liệu thiết kế (yêu cầu chức năng, user flow, ERD, cấu trúc thư mục, wireframe): [docs/DESIGN.md](docs/DESIGN.md).
 

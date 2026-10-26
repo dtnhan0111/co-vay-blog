@@ -18,14 +18,14 @@ type Props = {
 
 export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props) {
   const headline = !viewer
-    ? "Cuộc cờ đã tàn, kỳ phổ còn lưu."
+    ? "Ai thắng, ai thua, kỳ quán nhớ hết."
     : pendingCount > 0
       ? `${givenName(viewer.display_name)} ơi, có ${pendingCount} ván đang chờ bạn xác nhận.`
       : daysSinceLastGame === null
         ? `${givenName(viewer.display_name)} ơi, ván đầu tiên của bạn đang chờ.`
         : daysSinceLastGame === 0
           ? `${givenName(viewer.display_name)} ơi, bạn vừa đánh một ván hôm nay.`
-          : `${givenName(viewer.display_name)} ơi, ${daysSinceLastGame} ngày rồi bạn chưa ghi ván.`;
+          : `${givenName(viewer.display_name)} ơi, ${daysSinceLastGame} ngày rồi chưa thấy ván nào.`;
 
   const community =
     totals.matches === 0
@@ -38,7 +38,7 @@ export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props)
       <div className="relative max-w-[25rem]">
         <h1 className="text-[2.4rem] leading-[1.06] font-bold text-ink sm:text-5xl dark:text-paper">{headline}</h1>
         <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-ink/80 dark:text-paper/80">
-          {viewer ? community : "Đối cục xong ở câu lạc bộ, quán trà hay nhà bạn hữu, ghi lại trong vài nét. Đối thủ gật đầu, ván cờ vào kỳ phổ của cả kỳ quán."}
+          {viewer ? community : "Đánh xong ván nào ghi ván đó, mất vài giây. Đối thủ gật đầu là ván vào sổ, khỏi cãi nhau thắng thua."}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2.5">
