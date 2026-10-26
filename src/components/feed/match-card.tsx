@@ -1,118 +1,98 @@
 import Link from "next/link";
-import { MapPin, Sparkles, Swords, Trophy } from "lucide-react";
-import { RankBadge } from "@/components/go/rank-badge";
+import { MapPin, Sparkles } from "lucide-react";
 import { StoneAvatar } from "@/components/go/stone";
 import { Badge } from "@/components/ui/badge";
-import type { MatchView, Player } from "@/lib/data/types";
-import { formatScore, matchHeadline, relativeDay } from "@/lib/format";
+import type { MatchView } from "@/lib/data/types";
+import { COLOR_LABEL, formatScore, relativeDay } from "@/lib/format";
 import { isBigWin } from "@/lib/stats";
 import { cn } from "@/lib/utils";
 import { KudosButton } from "./kudos-button";
 
-function Side({ player, color, won, align }: { player: Player; color: "black" | "white"; won: boolean; align: "left" | "right" }) {
-  return (
-    <div className={cn("flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center", !won && "opacity-80")}>
-      <div className="relative">
-        <StoneAvatar name={player.display_name} tone={color} size={56} className={cn(won && "ring-2 ring-offset-2 ring-offset-card ring-wood")} />
-        {won && (
-          <span
-            className={cn(
-              "absolute -top-1.5 grid size-6 place-items-center rounded-full bg-wood text-white shadow ring-2 ring-card",
-              align === "left" ? "-right-2" : "-left-2",
-            )}
-            title="Người thắng"
-          >
-            <Trophy className="size-3" />
-            <span className="sr-only">Người thắng</span>
-          </span>
-        )}
-      </div>
-      <Link href={`/players/${player.id}`} className={cn("relative z-10 max-w-full truncate text-sm hover:underline", won ? "font-semibold" : "font-medium")}>
-        {player.display_name}
-      </Link>
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <span>{color === "black" ? "Đen" : "Trắng"}</span>
-        <RankBadge rank={player.rank_value} />
-      </div>
-    </div>
-  );
-}
-
 type Props = { match: MatchView; signedIn: boolean; today: string; className?: string; showKudos?: boolean; linkToDetail?: boolean };
 
-/** Một ván trên "kỳ phổ" cộng đồng. */
+/** Một ván trên "kỳ phổ" cộng đồng — gọn trong ~3 dòng: ai thắng ai, thế nào, ở đâu. */
 export function MatchCard({ match: m, signedIn, today, className, showKudos = true, linkToDetail = true }: Props) {
-  const { winnerName, loserName, detail } = matchHeadline(m);
-  const winnerRank = (m.winner === m.black.id ? m.black : m.white).rank_value;
-  const loserRank = (m.winner === m.black.id ? m.white : m.black).rank_value;
-  const upset = m.handicap === 0 && winnerRank < loserRank;
+  const winnerIsBlack = m.winner === m.black.id;
+  const [winner, loser] = winnerIsBlack ? [m.black, m.white] : [m.white, m.black];
+  const winnerColor = winnerIsBlack ? "black" : "white";
+  const loserColor = winnerIsBlack ? "white" : "black";
+
+  const upset = m.handicap === 0 && winner.rank_value < loser.rank_value;
   const bigWin = isBigWin(m);
   const oneSided = m.black.is_guest || m.white.is_guest;
 
-  return (
-    <article className={cn("wood-card relative p-4 sm:p-5", className)}>
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground/80">{relativeDay(m.played_on, today)}</span>
-        <span className="flex min-w-0 items-center gap-1">
-          <MapPin className="size-3 shrink-0" />
-          <span className="truncate">{m.location}</span>
-        </span>
-        <span className="ml-auto flex gap-1.5">
-          {oneSided && (
-            <Badge variant="outline" title="Đối thủ chưa dùng app nên ván được ghi từ một phía">
-              Ghi một phía
-            </Badge>
-          )}
-          {upset && (
-            <Badge variant="wood">
-              <Sparkles /> Lật kèo
-            </Badge>
-          )}
-          {bigWin && <Badge variant="default">Thắng đậm</Badge>}
-        </span>
-      </header>
+  const how =
+    m.win_method === "points"
+      ? `hơn ${formatScore(m.score_difference ?? 0)} điểm`
+      : m.win_method === "resign"
+        ? "đối thủ bỏ cuộc"
+        : "đối thủ hết giờ";
+  const setup = [m.handicap > 0 && `chấp ${m.handicap}`, m.board_size !== 19 && `bàn ${m.board_size}×${m.board_size}`].filter(Boolean).join(", ");
 
-      <div className="mt-4 flex items-start gap-2">
-        <Side player={m.black} color="black" won={m.winner === m.black.id} align="left" />
-        <div className="flex shrink-0 flex-col items-center gap-1 pt-3 text-muted-foreground" aria-hidden>
-          <span className="h-px w-8 bg-border sm:w-14" />
-          <Swords className="size-4" />
-          <span className="h-px w-8 bg-border sm:w-14" />
+  const title = (
+    <>
+      {winner.display_name} <span className="font-normal text-muted-foreground">thắng</span> {loser.display_name}
+    </>
+  );
+
+  return (
+    <article className={cn("wood-card relative px-4 pt-3.5 pb-1.5", className)}>
+      <div className="flex items-start gap-3">
+        <div className="relative mt-0.5 flex shrink-0 -space-x-1.5" aria-hidden>
+          <StoneAvatar name={winner.display_name} tone={winnerColor} size={44} className="relative z-10 ring-2 ring-wood ring-offset-2 ring-offset-card" />
+          <StoneAvatar name={loser.display_name} tone={loserColor} size={38} className="mt-2.5 opacity-90" />
         </div>
-        <Side player={m.white} color="white" won={m.winner === m.white.id} align="right" />
+
+        <div className="min-w-0 flex-1">
+          <div>
+            <h3 className="text-[1.15rem] leading-snug font-semibold">
+              {linkToDetail ? (
+                <Link href={`/matches/${m.id}`} className="after:absolute after:inset-0 after:content-['']">
+                  {title}
+                </Link>
+              ) : (
+                title
+              )}
+            </h3>
+          </div>
+
+          <p className="text-sm text-foreground/80">
+            {how}, cầm {COLOR_LABEL[winnerColor]}
+            {setup && `, ${setup}`}
+          </p>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex min-w-0 items-center gap-1">
+              <MapPin className="size-3 shrink-0" />
+              <span className="truncate">
+                {relativeDay(m.played_on, today)}, {m.location}
+              </span>
+            </span>
+            <span className="flex flex-wrap gap-1">
+              {upset && (
+                <Badge variant="wood">
+                  <Sparkles /> Lật kèo
+                </Badge>
+              )}
+              {bigWin && <Badge variant="default">Thắng đậm</Badge>}
+              {oneSided && (
+                <Badge variant="outline" title="Đối thủ chưa dùng app nên ván được ghi từ một phía">
+                  Ghi một phía
+                </Badge>
+              )}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <h3 className="mt-4 text-center text-xl leading-snug font-semibold">
-        {linkToDetail ? (
-          <Link href={`/matches/${m.id}`} className="after:absolute after:inset-0 after:content-['']">
-            <span>{winnerName}</span> <span className="font-normal text-muted-foreground">thắng</span> {loserName}
-          </Link>
-        ) : (
-          <>
-            <span>{winnerName}</span> <span className="font-normal text-muted-foreground">thắng</span> {loserName}
-          </>
-        )}
-        <span className="block text-base font-normal text-muted-foreground">
-          {m.win_method === "points" ? `hơn ${formatScore(m.score_difference ?? 0)} điểm` : detail}
-        </span>
-      </h3>
+      {m.note && <blockquote className="mt-2 line-clamp-2 border-l-2 border-wood/50 pl-3 text-sm leading-snug text-foreground/80 italic">{m.note}</blockquote>}
 
-      {(m.handicap > 0 || m.board_size !== 19) && (
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          {m.board_size !== 19 && <>Bàn {m.board_size}×{m.board_size}</>}
-          {m.board_size !== 19 && m.handicap > 0 && " · "}
-          {m.handicap > 0 && <>Chấp {m.handicap} quân</>}
-        </p>
+      {showKudos && (
+        <footer className="mt-1.5 flex items-center border-t border-border/70 pt-0.5">
+          <KudosButton matchId={m.id} count={m.kudos_count} active={m.kudosed_by_me} signedIn={signedIn} />
+        </footer>
       )}
-
-      {m.note && (
-        <blockquote className="mt-3 border-l-2 border-wood/50 pl-3 text-sm leading-relaxed text-foreground/80 italic">{m.note}</blockquote>
-      )}
-
-      <footer className="mt-3 flex items-center justify-between border-t border-border pt-2">
-        {showKudos ? <KudosButton matchId={m.id} count={m.kudos_count} active={m.kudosed_by_me} signedIn={signedIn} /> : <span />}
-        {m.club && <span className="truncate text-xs text-muted-foreground">{m.club.name}</span>}
-      </footer>
+      {!showKudos && <div className="pb-2" />}
     </article>
   );
 }

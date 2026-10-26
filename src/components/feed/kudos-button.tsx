@@ -40,7 +40,7 @@ export function KudosButton({ matchId, count: initialCount, active: initialActiv
       disabled={pending}
       aria-pressed={state.active}
       className={cn(
-        "relative z-10 -ml-2 inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors hover:bg-foreground/8",
+        "relative z-10 -ml-2 inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors hover:bg-foreground/8",
         state.active ? "text-foreground" : "text-muted-foreground",
       )}
     >
