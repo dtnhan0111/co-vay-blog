@@ -17,28 +17,32 @@ type Props = {
 };
 
 export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props) {
+  const name = viewer ? givenName(viewer.display_name) : "";
   const headline = !viewer
-    ? "Ai thắng, ai thua, kỳ quán nhớ hết."
+    ? "Bàn cờ còn đó, cố nhân nơi đâu?"
     : pendingCount > 0
-      ? `${givenName(viewer.display_name)} ơi, có ${pendingCount} ván đang chờ bạn xác nhận.`
+      ? `${name} ơi, có ${pendingCount} ván đang chờ bạn xác nhận.`
       : daysSinceLastGame === null
-        ? `${givenName(viewer.display_name)} ơi, ván đầu tiên của bạn đang chờ.`
+        ? `${name} ơi, ván đầu tiên của bạn đang chờ.`
         : daysSinceLastGame === 0
-          ? `${givenName(viewer.display_name)} ơi, bạn vừa đánh một ván hôm nay.`
-          : `${givenName(viewer.display_name)} ơi, ${daysSinceLastGame} ngày rồi chưa thấy ván nào.`;
+          ? `${name} ơi, bạn vừa đánh một ván hôm nay.`
+          : daysSinceLastGame < 3
+            ? `${name} ơi, hôm nay bạn đã ngồi xuống bàn cờ chưa?`
+            : `Ấm trà đã nguội vài lần, kỳ quán vẫn chừa cho bạn một chỗ ngồi quen, ${name}.`;
 
   const community =
     totals.matches === 0
       ? "Chưa có ván nào trên kỳ phổ. Ván bạn ghi hôm nay sẽ là ván đầu tiên."
       : `${totals.players} kỳ thủ đã ghi ${totals.matches} ván tại ${totals.clubs || "nhiều"} câu lạc bộ, ${totals.week} ván trong 7 ngày qua.`;
+  const away = viewer && pendingCount === 0 && daysSinceLastGame !== null && daysSinceLastGame >= 3 ? `Đã ${daysSinceLastGame} ngày bạn chưa ghi ván. ` : "";
 
   return (
     <BoardPanel className="px-5 py-8 sm:px-9 sm:py-10">
       <HeroBoard className="absolute top-1/2 right-6 hidden w-[200px] -translate-y-1/2 md:block lg:right-8" />
       <div className="relative max-w-[25rem]">
-        <h1 className="text-[2.4rem] leading-[1.06] font-bold text-ink sm:text-5xl dark:text-paper">{headline}</h1>
+        <h1 className={`${headline.length > 50 ? "text-[1.9rem] sm:text-4xl" : "text-[2.4rem] sm:text-5xl"} leading-[1.1] font-bold text-ink dark:text-paper`}>{headline}</h1>
         <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-ink/80 dark:text-paper/80">
-          {viewer ? community : "Đánh xong ván nào ghi ván đó, mất vài giây. Đối thủ gật đầu là ván vào sổ, khỏi cãi nhau thắng thua."}
+          {viewer ? `${away}${community}` : "Đánh xong một ván, ghi lại vài dòng. Nhiều năm sau nhìn lại, vẫn nhớ đã gặp ai bên bàn cờ hôm ấy."}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2.5">
