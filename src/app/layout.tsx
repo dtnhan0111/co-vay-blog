@@ -10,7 +10,7 @@ const FONTS_HREF =
 export const metadata: Metadata = {
   title: { default: "Go Đà Nẵng — Kỳ quán số của người chơi cờ Vây", template: "%s · Go Đà Nẵng" },
   description:
-    "Cộng đồng cờ Vây ngoài đời của Đà Nẵng: ghi lại những ván đã đánh, xác nhận cùng đối thủ và nhìn lại hành trình của cả kỳ quán.",
+    "Ghi lại những ván cờ Vây bạn đã đánh cùng bạn bè ở Đà Nẵng, để đối thủ xác nhận và cả kỳ quán cùng nhìn lại.",
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='12' cy='13' r='10' fill='%23111'/><circle cx='20' cy='19' r='10' fill='%23f8f8f8' stroke='%238b5e3c' stroke-width='1.2'/></svg>",
   },
