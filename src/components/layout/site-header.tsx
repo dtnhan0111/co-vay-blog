@@ -1,5 +1,5 @@
 import { getViewer } from "@/lib/auth";
-import { isDemoMode, repo } from "@/lib/data";
+import { repo } from "@/lib/data";
 import { Brand } from "./brand";
 import { DesktopNav } from "./desktop-nav";
 import { ThemeToggle } from "./theme-toggle";
@@ -11,11 +11,6 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-      {isDemoMode && (
-        <p className="bg-ink px-4 py-1 text-center text-[11px] tracking-wide text-paper">
-          Chế độ demo · dữ liệu mẫu hư cấu — chưa kết nối Supabase
-        </p>
-      )}
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Brand />
         <DesktopNav />

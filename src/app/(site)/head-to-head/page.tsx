@@ -38,7 +38,7 @@ export default async function HeadToHeadPage({ searchParams }: { searchParams: P
 
   return (
     <div className="space-y-6">
-      <SectionHeading title="Đối đầu" kicker="Hai người, một bàn cờ" />
+      <SectionHeading title="Đối đầu" />
       <H2HPicker players={players} a={a?.id ?? null} b={b?.id ?? null} />
 
       {!a || !b || !h ? (
@@ -87,7 +87,7 @@ export default async function HeadToHeadPage({ searchParams }: { searchParams: P
                 <p className="font-display text-5xl leading-none font-bold tabular-nums sm:text-7xl" aria-label={`${h.aWins} trên ${h.bWins}`}>
                   {h.aWins}<span className="mx-1.5 font-normal opacity-50 sm:mx-3">–</span>{h.bWins}
                 </p>
-                <p className="mt-2 text-xs tracking-widest uppercase opacity-70">{h.games} ván</p>
+                <p className="mt-2 text-sm opacity-70">{h.games} ván</p>
               </div>
             </div>
 
@@ -134,7 +134,7 @@ export default async function HeadToHeadPage({ searchParams }: { searchParams: P
           )}
 
           <section className="space-y-3">
-            <SectionHeading title="Những lần gặp nhau" kicker={`Góc nhìn của ${a.display_name}`} />
+            <SectionHeading title="Những lần gặp nhau" description={`Kết quả nhìn từ phía ${a.display_name}`} />
             {between.length === 0 ? (
               <div className="paper-card px-6 py-10 text-center text-sm text-muted-foreground">Hai người chưa có ván nào được xác nhận.</div>
             ) : (

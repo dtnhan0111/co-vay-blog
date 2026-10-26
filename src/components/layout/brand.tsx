@@ -10,7 +10,6 @@ export function Brand() {
       </span>
       <span className="leading-none">
         <span className="block font-display text-[1.35rem] font-bold tracking-tight">Go Đà Nẵng</span>
-        <span className="mt-0.5 hidden text-[10px] tracking-[0.28em] text-muted-foreground uppercase sm:block">Kỳ quán số · 碁</span>
       </span>
     </Link>
   );

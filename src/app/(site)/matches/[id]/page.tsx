@@ -29,7 +29,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       {!confirmed && viewer && (
         <div className="wood-card wood-board p-5">
-          <p className="mb-3 text-xs font-medium tracking-[0.18em] uppercase opacity-70">
+          <p className="mb-3 text-sm font-medium opacity-80">
             {match.status === "pending" ? "Chưa được xác nhận" : "Bị báo sai sót"}
           </p>
           {waitingOnMe && <IncomingRequestCard match={match} viewerId={viewer.id} />}

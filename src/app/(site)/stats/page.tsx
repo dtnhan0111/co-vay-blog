@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Stone } from "@/components/go/stone";
 import { SectionHeading } from "@/components/go/section-heading";
 import { StatTile } from "@/components/go/stat-tile";
@@ -21,6 +23,25 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   const name = (id: string) => byId.get(id)?.display_name ?? "—";
   const link = (id: string) => `/players/${id}`;
 
+  if (matches.length === 0) {
+    return (
+      <div className="space-y-6">
+        <SectionHeading title="Thống kê kỳ quán" />
+        <div className="wood-card space-y-3 px-6 py-14 text-center">
+          <div className="flex justify-center gap-2">
+            <Stone color="black" size={48} />
+            <Stone color="white" size={48} />
+          </div>
+          <p className="font-display text-2xl">Bàn cờ còn trống</p>
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground">Số liệu sẽ xuất hiện khi những ván đầu tiên được ghi và xác nhận.</p>
+          <Button asChild className="mt-2">
+            <Link href="/record">Ghi ván đầu tiên</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const decided = s.blackWins + s.whiteWins;
   const blackShare = decided ? s.blackWins / decided : 0.5;
   const rangeText = range === "all" ? "từ trước đến nay" : `trong ${RANGE_LABEL[range]} qua`;
@@ -28,7 +49,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <SectionHeading title="Thống kê kỳ quán" kicker="Cả cộng đồng nhìn lại" />
+        <SectionHeading title="Thống kê kỳ quán" />
         <RangeTabs current={range} />
       </div>
 
@@ -67,6 +88,9 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
             <h2 className="text-2xl font-semibold">Đen hay Trắng?</h2>
             <p className="text-sm text-muted-foreground">Chỉ tính {s.evenGames} ván không chấp.</p>
           </div>
+          {decided === 0 ? (
+            <p className="py-6 text-sm text-muted-foreground">Chưa có ván không chấp nào trong khoảng này.</p>
+          ) : (
           <div className="flex items-center gap-4">
             <div className="text-center">
               <Stone color="black" size={52} />
@@ -83,11 +107,12 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
               <p className="text-xs text-muted-foreground">{s.whiteWins} thắng</p>
             </div>
           </div>
+          )}
         </div>
       </section>
 
       <section className="space-y-4">
-        <SectionHeading title="Bảng vàng" kicker={`Cập nhật ${rangeText}`} />
+        <SectionHeading title="Bảng vàng" description="Chỉ tính các ván mà cả hai bên đều là thành viên có tài khoản." />
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           <Leaderboard
             title="Chăm chỉ nhất"
@@ -162,7 +187,7 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
           </ul>
           {s.venues.length > 0 && (
             <div className="border-t border-border/70 pt-4">
-              <p className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Địa điểm sôi động</p>
+              <p className="mb-2 text-sm font-medium">Địa điểm đông nhất</p>
               <ul className="space-y-1.5 text-sm">
                 {s.venues.map((v) => (
                   <li key={v.location} className="flex justify-between gap-3">

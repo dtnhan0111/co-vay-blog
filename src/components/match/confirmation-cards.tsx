@@ -33,7 +33,7 @@ function Versus({ match, viewerId }: { match: MatchView; viewerId: string }) {
         <p className="flex items-center gap-1 text-xs text-muted-foreground">
           <MapPin className="size-3 shrink-0" />
           <span className="truncate">
-            {relativeDay(match.played_on)} · {match.location}
+            {relativeDay(match.played_on)}, {match.location}
           </span>
         </p>
       </div>

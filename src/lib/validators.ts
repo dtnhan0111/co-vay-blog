@@ -56,6 +56,11 @@ export const profilePatchSchema = z
   })
   .partial();
 
+export const guestSchema = z.object({
+  display_name: z.string().trim().min(2, "Tên quá ngắn").max(60),
+  rank_value: z.number().int().min(MIN_RANK).max(MAX_RANK),
+});
+
 export const headToHeadQuery = z.object({ a: id, b: id }).refine((v) => v.a !== v.b, "Hãy chọn hai kỳ thủ khác nhau");
 
 export const matchesQuery = z.object({
@@ -64,5 +69,3 @@ export const matchesQuery = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
-
-export const demoLoginSchema = z.object({ playerId: id });

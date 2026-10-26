@@ -1,20 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, Plus } from "lucide-react";
 import { BoardPanel } from "@/components/go/board-panel";
-import { Stone } from "@/components/go/stone";
+import { HeroBoard } from "@/components/go/hero-board";
 import { Button } from "@/components/ui/button";
 import type { Player } from "@/lib/data/types";
 
 function givenName(name: string) {
   return name.trim().split(/\s+/).at(-1) ?? name;
-}
-
-function daypart(now = new Date()) {
-  const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: "Asia/Ho_Chi_Minh" }).format(now));
-  if (hour < 11) return "buổi sáng";
-  if (hour < 14) return "buổi trưa";
-  if (hour < 18) return "buổi chiều";
-  return "buổi tối";
 }
 
 type Props = {
@@ -25,42 +17,31 @@ type Props = {
 };
 
 export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props) {
-  const line = !viewer
-    ? "Nơi những ván cờ Vây ngoài đời của Đà Nẵng được ghi nhớ — không phải bàn phím, mà là bàn gỗ, trà nóng và một đối thủ ngồi đối diện."
+  const headline = !viewer
+    ? "Cờ Vây đánh ngoài đời, nhớ ở đây."
     : pendingCount > 0
-      ? `Có ${pendingCount} ván đang chờ bạn xác nhận — một cái gật đầu là đủ.`
+      ? `${givenName(viewer.display_name)} ơi, có ${pendingCount} ván đang chờ bạn xác nhận.`
       : daysSinceLastGame === null
-        ? "Bạn chưa ghi ván nào. Ván đầu tiên luôn đáng nhớ."
+        ? `${givenName(viewer.display_name)} ơi, ván đầu tiên của bạn đang chờ.`
         : daysSinceLastGame === 0
-          ? "Hôm nay bạn đã đánh một ván. Chúc ngon trà."
-          : `Ván gần nhất của bạn cách đây ${daysSinceLastGame} ngày. Có ai đang chờ một nước đi?`;
+          ? `${givenName(viewer.display_name)} ơi, bạn vừa đánh một ván hôm nay.`
+          : `${givenName(viewer.display_name)} ơi, ${daysSinceLastGame} ngày rồi bạn chưa ghi ván.`;
+
+  const community =
+    totals.matches === 0
+      ? "Chưa có ván nào trên kỳ phổ. Ván bạn ghi hôm nay sẽ là ván đầu tiên."
+      : `${totals.players} kỳ thủ đã ghi ${totals.matches} ván tại ${totals.clubs || "nhiều"} câu lạc bộ, ${totals.week} ván trong 7 ngày qua.`;
 
   return (
-    <BoardPanel className="px-5 py-7 sm:px-9 sm:py-10">
-      <Stone color="black" size={92} className="pointer-events-none absolute -top-6 -right-5 opacity-90 sm:-top-4 sm:right-10 sm:[--size:150px]!" aria-hidden />
-      <Stone color="white" size={64} className="pointer-events-none absolute hidden opacity-90 sm:top-32 sm:right-[12.5rem] sm:grid sm:[--size:104px]!" aria-hidden />
-
-      <div className="relative max-w-xl">
-        <p className="text-xs font-medium tracking-[0.22em] text-ink/70 uppercase dark:text-paper/70">
-          {viewer ? `Chào ${daypart()}` : "Kỳ quán số · Đà Nẵng"}
+    <BoardPanel className="px-5 py-8 sm:px-9 sm:py-10">
+      <HeroBoard className="absolute top-1/2 right-6 hidden w-[200px] -translate-y-1/2 md:block lg:right-8" />
+      <div className="relative max-w-[25rem]">
+        <h1 className="text-[2.4rem] leading-[1.06] font-bold text-ink sm:text-5xl dark:text-paper">{headline}</h1>
+        <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-ink/80 dark:text-paper/80">
+          {viewer ? community : "Ghi lại mỗi ván đã đánh ở CLB, quán trà hay nhà bạn bè. Đối thủ xác nhận, kỳ phổ ghi nhớ."}
         </p>
-        <h1 className="mt-2 text-[2.5rem] leading-[1.02] font-bold text-ink sm:text-6xl dark:text-paper">
-          {viewer ? (
-            <>
-              {givenName(viewer.display_name)},<br />
-              <span className="font-medium italic">đến lượt bạn.</span>
-            </>
-          ) : (
-            <>
-              Cờ Vây,
-              <br />
-              <span className="font-medium italic">đánh thật, nhớ lâu.</span>
-            </>
-          )}
-        </h1>
-        <p className="mt-3 max-w-md text-[15px] leading-relaxed text-ink/80 dark:text-paper/80">{line}</p>
 
-        <div className="mt-5 flex flex-wrap gap-2.5">
+        <div className="mt-6 flex flex-wrap gap-2.5">
           <Button asChild size="lg">
             <Link href="/record">
               <Plus /> Ghi ván mới
@@ -69,25 +50,12 @@ export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props)
           {!viewer && (
             <Button asChild size="lg" variant="outline" className="border-ink/40 dark:border-paper/40">
               <Link href="/login">
-                Tham gia kỳ quán <ArrowRight />
+                Vào kỳ quán <ArrowRight />
               </Link>
             </Button>
           )}
         </div>
-
-        <dl className="mt-7 grid grid-cols-4 gap-2 border-t border-ink/20 pt-4 dark:border-paper/20">
-          {[
-            [totals.players, "kỳ thủ"],
-            [totals.matches, "ván cờ"],
-            [totals.clubs, "CLB"],
-            [totals.week, "ván tuần này"],
-          ].map(([n, label]) => (
-            <div key={label} className="flex flex-col-reverse">
-              <dt className="text-[11px] leading-tight text-ink/70 dark:text-paper/70">{label}</dt>
-              <dd className="font-display text-3xl leading-none font-bold tabular-nums sm:text-4xl">{n}</dd>
-            </div>
-          ))}
-        </dl>
+        {!viewer && totals.matches > 0 && <p className="mt-5 text-sm text-ink/70 dark:text-paper/70">{community}</p>}
       </div>
     </BoardPanel>
   );

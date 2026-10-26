@@ -18,6 +18,7 @@ export type DirectoryEntry = {
   rank_value: number;
   club_id: string | null;
   clubName: string | null;
+  isGuest: boolean;
   games: number;
   wins: number;
   losses: number;
@@ -130,8 +131,8 @@ export function PlayerDirectory({
         </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {list.map((p, i) => (
-            <li key={p.id} className="animate-rise" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
+          {list.map((p) => (
+            <li key={p.id}>
               <Link href={`/players/${p.id}`} className="wood-card flex h-full flex-col gap-3 p-4 transition-transform hover:-translate-y-0.5">
                 <div className="flex items-center gap-3.5">
                   <StoneAvatar name={p.display_name} size={64} />
@@ -139,7 +140,7 @@ export function PlayerDirectory({
                     <p className="truncate font-display text-xl leading-tight font-semibold">{p.display_name}</p>
                     <div className="mt-1 flex items-center gap-2">
                       <RankBadge rank={p.rank_value} />
-                      <span className="truncate text-xs text-muted-foreground">{p.clubName ?? "Chưa vào CLB"}</span>
+                      <span className="truncate text-xs text-muted-foreground">{p.isGuest ? "Khách · chưa dùng app" : (p.clubName ?? "Chưa vào CLB")}</span>
                     </div>
                   </div>
                 </div>

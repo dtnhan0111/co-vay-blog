@@ -1,6 +1,7 @@
 import { ConfirmationTray } from "@/components/match/confirmation-tray";
 import { FeedList } from "@/components/feed/feed-list";
 import { SectionHeading } from "@/components/go/section-heading";
+import { ProfileNudge } from "@/components/home/profile-nudge";
 import { Hero } from "@/components/home/hero";
 import { WeekSidebar } from "@/components/home/week-sidebar";
 import { getViewer } from "@/lib/auth";
@@ -31,17 +32,19 @@ export default async function HomePage() {
           pendingCount={incoming.length}
           daysSinceLastGame={lastPlayed ? daysBetween(lastPlayed, today) : null}
           totals={{
-            players: players.length,
+            players: players.filter((p) => !p.is_guest).length,
             matches: matches.length,
             clubs: clubs.length,
             week: matches.filter((m) => m.played_on >= weekStart).length,
           }}
         />
 
+        {viewer && !viewer.bio && !viewer.club_id && !viewer.playing_since && <ProfileNudge playerId={viewer.id} />}
+
         {viewer && <ConfirmationTray incoming={incoming} outgoing={outgoing} viewerId={viewer.id} />}
 
         <section className="space-y-4">
-          <SectionHeading title="Kỳ phổ cộng đồng" kicker="Những ván mới nhất" />
+          <SectionHeading title="Kỳ phổ cộng đồng" />
           <FeedList
             matches={matches.slice(0, 48)}
             viewer={viewer && { id: viewer.id, club_id: viewer.club_id }}

@@ -18,6 +18,7 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
       display_name: p.display_name,
       rank_value: p.rank_value,
       club_id: p.club_id,
+      isGuest: p.is_guest,
       clubName: p.club_id ? (clubMap.get(p.club_id)?.name ?? null) : null,
       games: s.games,
       wins: s.wins,
@@ -29,11 +30,11 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
   });
 
   const members = new Map<string, number>();
-  for (const p of players) if (p.club_id) members.set(p.club_id, (members.get(p.club_id) ?? 0) + 1);
+  for (const p of players.filter((x) => !x.is_guest)) if (p.club_id) members.set(p.club_id, (members.get(p.club_id) ?? 0) + 1);
 
   return (
     <div className="space-y-6">
-      <SectionHeading title="Kỳ thủ Đà Nẵng" kicker="Những người ngồi quanh bàn cờ" />
+      <SectionHeading title="Kỳ thủ Đà Nẵng" />
       <PlayerDirectory
         players={entries}
         clubs={clubs.map((c) => ({ id: c.id, name: c.name, meets_at: c.meets_at, address: c.address, members: members.get(c.id) ?? 0 }))}

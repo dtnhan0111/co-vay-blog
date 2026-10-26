@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { activityBoard, headToHead, headToHeadSummary, playerStats, upsetGap, ACTIVITY_DAYS } from "./stats";
+import { activityBoard, communityStats, headToHead, headToHeadSummary, playerStats, upsetGap, ACTIVITY_DAYS } from "./stats";
 import type { MatchRow } from "./data/types";
 
 const A = "a";
@@ -110,5 +110,27 @@ describe("activityBoard", () => {
     assert.equal(cells.at(-1)?.date, today);
     assert.equal(cells.at(-1)?.wins, 1);
     assert.equal(cells.reduce((n, c) => n + c.games, 0), 1); // ván quá cũ nằm ngoài bàn cờ
+  });
+});
+
+describe("communityStats leaderboards", () => {
+  const base = { bio: null, club_id: null, playing_since: null, created_by: null, created_at: "2026-01-01T00:00:00Z" };
+  const players = [
+    { ...base, id: A, display_name: "A", rank_value: 1, is_guest: false },
+    { ...base, id: B, display_name: "B", rank_value: -3, is_guest: false },
+    { ...base, id: "g", display_name: "Khách", rank_value: -9, is_guest: true },
+  ];
+
+  it("ignores guest opponents in win-rate, streak, upset and big-win boards but still counts the games", () => {
+    const m = [
+      ...Array.from({ length: 6 }, () => match({ black_player: A, white_player: "g", winner: A, score_difference: 30.5 })),
+      match({ black_player: A, white_player: B, winner: B, score_difference: 2.5 }),
+    ];
+    const s = communityStats(m, players, [], "2026-03-30");
+    assert.equal(s.totalMatches, 7);
+    assert.equal(s.mostActive[0].playerId, A);
+    assert.deepEqual(s.bestWinRate, []); // chỉ 1 ván có cả hai là thành viên
+    assert.equal(s.bigWins.length, 0);
+    assert.equal(s.longestStreaks.find((x) => x.playerId === A), undefined); // 6 thắng khách không tạo chuỗi
   });
 });

@@ -47,6 +47,7 @@ export function MatchCard({ match: m, signedIn, today, className, showKudos = tr
   const loserRank = (m.winner === m.black.id ? m.white : m.black).rank_value;
   const upset = m.handicap === 0 && winnerRank < loserRank;
   const bigWin = isBigWin(m);
+  const oneSided = m.black.is_guest || m.white.is_guest;
 
   return (
     <article className={cn("wood-card relative p-4 sm:p-5", className)}>
@@ -57,6 +58,11 @@ export function MatchCard({ match: m, signedIn, today, className, showKudos = tr
           <span className="truncate">{m.location}</span>
         </span>
         <span className="ml-auto flex gap-1.5">
+          {oneSided && (
+            <Badge variant="outline" title="Đối thủ chưa dùng app nên ván được ghi từ một phía">
+              Ghi một phía
+            </Badge>
+          )}
           {upset && (
             <Badge variant="wood">
               <Sparkles /> Lật kèo

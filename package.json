@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed:sql": "tsx scripts/generate-seed-sql.ts",
     "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {

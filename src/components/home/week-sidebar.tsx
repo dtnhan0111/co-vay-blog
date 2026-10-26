@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Flame, MapPin, Sparkles } from "lucide-react";
+import { Clock, Flame, Sparkles } from "lucide-react";
 import { RankBadge } from "@/components/go/rank-badge";
 import { StoneAvatar } from "@/components/go/stone";
 import type { Club, MatchRow, Player } from "@/lib/data/types";
@@ -43,7 +43,7 @@ export function WeekSidebar({ matches, players, clubs, since }: Props) {
                   </p>
                   <p className="text-muted-foreground">
                     thắng {l.display_name} ({upset.gap} hạng trên)
-                    {upset.m.win_method === "points" && ` · ${formatScore(upset.m.score_difference ?? 0)} điểm`}
+                    {upset.m.win_method === "points" && `, hơn ${formatScore(upset.m.score_difference ?? 0)} điểm`}
                   </p>
                 </div>
               </Link>
@@ -71,6 +71,7 @@ export function WeekSidebar({ matches, players, clubs, since }: Props) {
         </section>
       )}
 
+      {clubs.length > 0 && (
       <section className="wood-card p-5">
         <div className="flex items-baseline justify-between">
           <h2 className="text-lg font-semibold">Các câu lạc bộ</h2>
@@ -85,12 +86,13 @@ export function WeekSidebar({ matches, players, clubs, since }: Props) {
                 {c.name}
               </Link>
               <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="size-3 shrink-0" /> {c.meets_at}
+                <Clock className="size-3 shrink-0" /> {c.meets_at}
               </p>
             </li>
           ))}
         </ul>
       </section>
+      )}
     </aside>
   );
 }

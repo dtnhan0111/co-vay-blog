@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,14 +46,15 @@ export function FeedList({ matches, viewer, today }: { matches: MatchView[]; vie
         <div className="paper-card flex flex-col items-center gap-2 px-6 py-10 text-center">
           <Users className="size-6 text-muted-foreground" />
           <p className="font-display text-xl">Chưa có ván nào ở đây</p>
-          <p className="text-sm text-muted-foreground">Ván đã được đối thủ xác nhận sẽ xuất hiện trên kỳ phổ.</p>
+          <p className="text-sm text-muted-foreground">Ván được đối thủ xác nhận sẽ xuất hiện trên kỳ phổ.</p>
+          <Button asChild className="mt-2">
+            <Link href={viewer ? "/record" : "/login"}>{viewer ? "Ghi ván đầu tiên" : "Vào kỳ quán để ghi ván"}</Link>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          {visible.map((m, i) => (
-            <div key={m.id} className="animate-rise" style={{ animationDelay: `${Math.min(i, 6) * 45}ms` }}>
-              <MatchCard match={m} signedIn={!!viewer} today={today} />
-            </div>
+          {visible.map((m) => (
+            <MatchCard key={m.id} match={m} signedIn={!!viewer} today={today} />
           ))}
         </div>
       )}

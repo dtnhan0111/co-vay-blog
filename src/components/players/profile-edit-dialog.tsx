@@ -14,13 +14,14 @@ import { api } from "@/lib/client-api";
 import { RANK_OPTIONS } from "@/lib/rank";
 
 type Props = {
+  defaultOpen?: boolean;
   player: { id: string; display_name: string; rank_value: number; club_id: string | null; bio: string | null; playing_since: number | null };
   clubs: { id: string; name: string }[];
 };
 
-export function ProfileEditDialog({ player, clubs }: Props) {
+export function ProfileEditDialog({ player, clubs, defaultOpen = false }: Props) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [pending, setPending] = useState(false);
   const [form, setForm] = useState({
     display_name: player.display_name,

@@ -307,6 +307,9 @@ export function communityStats(
   since?: string,
 ): CommunityStats {
   const rankById = new Map(players.map((p) => [p.id, p.rank_value]));
+  // Bảng vàng chỉ tính ván mà cả hai bên đều là thành viên (khách không thể xác nhận).
+  const guestIds = new Set(players.filter((p) => p.is_guest).map((p) => p.id));
+  const isVerified = (m: Played) => !guestIds.has(m.black_player) && !guestIds.has(m.white_player);
   const rankOf: RankFn = (id) => rankById.get(id) ?? 0;
   const matches = since ? allMatches.filter((m) => m.played_on >= since) : allMatches;
 
@@ -328,6 +331,7 @@ export function communityStats(
   let evenGames = 0;
   const margins: number[] = [];
   const games = new Map<string, { games: number; wins: number }>();
+  const verifiedGames = new Map<string, { games: number; wins: number }>();
   const venues = new Map<string, number>();
   const clubGames = new Map<string, number>();
   const rolling = new Map<string, number>();
@@ -344,28 +348,36 @@ export function communityStats(
     venues.set(m.location, (venues.get(m.location) ?? 0) + 1);
     if (m.club_id) clubGames.set(m.club_id, (clubGames.get(m.club_id) ?? 0) + 1);
 
+    const verified = isVerified(m);
     for (const id of [m.black_player, m.white_player]) {
       const g = games.get(id) ?? { games: 0, wins: 0 };
       g.games++;
+      if (m.winner === id) g.wins++;
+      games.set(id, g);
+
+      if (!verified) continue;
+      const v = verifiedGames.get(id) ?? { games: 0, wins: 0 };
+      v.games++;
       if (m.winner === id) {
-        g.wins++;
+        v.wins++;
         const run = (rolling.get(id) ?? 0) + 1;
         rolling.set(id, run);
         bestRun.set(id, Math.max(bestRun.get(id) ?? 0, run));
       } else {
         rolling.set(id, 0);
       }
-      games.set(id, g);
+      verifiedGames.set(id, v);
     }
   }
 
   const members = new Map<string, number>();
-  for (const p of players) if (p.club_id) members.set(p.club_id, (members.get(p.club_id) ?? 0) + 1);
+  for (const p of players.filter((x) => !x.is_guest)) if (p.club_id) members.set(p.club_id, (members.get(p.club_id) ?? 0) + 1);
 
   const rankCount = new Map<number, number>();
-  for (const p of players) rankCount.set(p.rank_value, (rankCount.get(p.rank_value) ?? 0) + 1);
+  for (const p of players.filter((x) => !x.is_guest)) rankCount.set(p.rank_value, (rankCount.get(p.rank_value) ?? 0) + 1);
 
   const upsets = matches
+    .filter(isVerified)
     .map((match) => ({ match, gap: upsetGap(match, rankOf) }))
     .filter((u) => u.gap > 0)
     .sort((a, b) => b.gap - a.gap || b.match.played_on.localeCompare(a.match.played_on))
@@ -376,7 +388,7 @@ export function communityStats(
   return {
     totalMatches: matches.length,
     activePlayers: games.size,
-    totalPlayers: players.length,
+    totalPlayers: players.filter((p) => !p.is_guest).length,
     totalClubs: clubs.length,
     matchesLast7Days: allMatches.filter((m) => m.played_on >= sinceLast7).length,
     weekly,
@@ -389,7 +401,7 @@ export function communityStats(
       .map(([playerId, g]) => ({ playerId, games: g.games }))
       .sort((a, b) => b.games - a.games)
       .slice(0, 5),
-    bestWinRate: [...games.entries()]
+    bestWinRate: [...verifiedGames.entries()]
       .filter(([, g]) => g.games >= MIN_GAMES_FOR_WIN_RATE)
       .map(([playerId, g]) => ({ playerId, games: g.games, winRate: rate(g.wins, g.games) }))
       .sort((a, b) => b.winRate - a.winRate || b.games - a.games)
@@ -399,7 +411,7 @@ export function communityStats(
       .sort((a, b) => b.length - a.length)
       .slice(0, 5),
     upsets,
-    bigWins: matches.filter(isBigWin).sort((a, b) => (b.score_difference ?? 0) - (a.score_difference ?? 0)).slice(0, 5),
+    bigWins: matches.filter((m) => isBigWin(m) && isVerified(m)).sort((a, b) => (b.score_difference ?? 0) - (a.score_difference ?? 0)).slice(0, 5),
     rankDistribution: [...rankCount.entries()].map(([rank, count]) => ({ rank, count })).sort((a, b) => b.rank - a.rank),
     clubActivity: clubs
       .map((c) => ({ clubId: c.id, games: clubGames.get(c.id) ?? 0, members: members.get(c.id) ?? 0 }))

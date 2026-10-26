@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { BoardPanel } from "@/components/go/board-panel";
 import { RecordMatchForm } from "@/components/match/record-match-form";
 import { requireViewer } from "@/lib/auth";
 import { repo } from "@/lib/data";
@@ -25,6 +24,7 @@ export default async function RecordPage({ searchParams }: { searchParams: Promi
     display_name: p.display_name,
     rank_value: p.rank_value,
     clubName: p.club_id ? (clubMap.get(p.club_id)?.name ?? null) : null,
+    isGuest: p.is_guest,
   });
 
   const byId = new Map(players.map((p) => [p.id, p]));
@@ -53,17 +53,17 @@ export default async function RecordPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <BoardPanel className="px-6 py-6">
-        <p className="text-xs font-medium tracking-[0.2em] text-ink/70 uppercase dark:text-paper/70">Dưới 30 giây</p>
-        <h1 className="mt-1 text-4xl font-bold sm:text-5xl">Ghi một ván</h1>
-        <p className="mt-1 text-[15px] text-ink/80 dark:text-paper/80">Chạm vài lần là xong. Đối thủ sẽ nhận được lời mời xác nhận.</p>
-      </BoardPanel>
+      <div>
+        <h1 className="text-4xl font-bold sm:text-5xl">Ghi một ván</h1>
+        <p className="mt-1 text-[15px] text-muted-foreground">Chạm vài lần là xong. Đối thủ sẽ nhận lời mời xác nhận.</p>
+      </div>
       <RecordMatchForm
         today={todayVN()}
         recents={recents}
         everyone={everyone}
         clubs={clubs.map((c) => ({ id: c.id, name: c.name }))}
         defaultLocation={defaultLocation}
+        viewerRank={viewer.rank_value}
         initialOpponentId={everyone.some((p) => p.id === opponent) ? opponent : null}
       />
     </div>

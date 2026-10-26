@@ -18,8 +18,10 @@ create table public.clubs (
 );
 
 -- ───────────────────────────── users ─────────────────────────────
--- Một dòng = một kỳ thủ. `auth_id` rỗng nghĩa là hồ sơ được tạo sẵn
--- và sẽ được "nhận" khi người đó đăng nhập Google bằng đúng email.
+-- Một dòng = một kỳ thủ. Có ba loại:
+--   • thành viên: có `auth_id` (đã đăng nhập Google)
+--   • hồ sơ tạo sẵn: `auth_id` rỗng + có `email`, được "nhận" khi người đó đăng nhập đúng email
+--   • khách: `is_guest` — do một thành viên gõ tên khi ghi ván với người chưa dùng app
 -- rank_value: 1 dan = 1, 1 kyu = 0, 2 kyu = -1 … 30 kyu = -29, 9 dan = 9.
 create table public.users (
   id            uuid primary key default gen_random_uuid(),
@@ -30,7 +32,10 @@ create table public.users (
   club_id       uuid references public.clubs (id) on delete set null,
   bio           text check (char_length(bio) <= 280),
   playing_since smallint check (playing_since between 1950 and 2100),
-  created_at    timestamptz not null default now()
+  is_guest      boolean not null default false,
+  created_by    uuid references public.users (id) on delete set null,
+  created_at    timestamptz not null default now(),
+  constraint users_guest_rule check (not is_guest or auth_id is null)
 );
 create unique index users_email_lower_key on public.users (lower(email));
 create index users_club_idx on public.users (club_id);
@@ -152,16 +157,23 @@ create trigger matches_validate
   for each row execute function public.validate_match();
 
 -- Tạo yêu cầu xác nhận gửi cho đối thủ ngay khi ván được ghi.
+-- Nếu đối thủ chưa có tài khoản (khách / hồ sơ chưa được nhận) thì không ai trả lời được:
+-- ván được ghi nhận luôn, không có dòng xác nhận (UI gắn nhãn "đối thủ chưa dùng app").
 create or replace function public.create_confirmation_request()
 returns trigger
 language plpgsql security definer set search_path = public
 as $$
+declare
+  opponent uuid := case when new.recorded_by = new.black_player then new.white_player else new.black_player end;
+  opponent_auth uuid;
 begin
-  insert into public.match_confirmations (match_id, user_id)
-  values (
-    new.id,
-    case when new.recorded_by = new.black_player then new.white_player else new.black_player end
-  );
+  select auth_id into opponent_auth from public.users where id = opponent;
+
+  if opponent_auth is null then
+    update public.matches set status = 'confirmed', resolved_at = now() where id = new.id;
+  else
+    insert into public.match_confirmations (match_id, user_id) values (new.id, opponent);
+  end if;
   return new;
 end;
 $$;
@@ -212,8 +224,10 @@ create trigger confirmations_apply
 -- Email là dữ liệu riêng tư: không cấp quyền SELECT cột email cho client.
 -- (Vì vậy phía app luôn liệt kê cột cụ thể, không dùng select('*') trên users.)
 revoke all on public.users from anon, authenticated;
-grant select (id, display_name, rank_value, club_id, bio, playing_since, created_at)
+grant select (id, display_name, rank_value, club_id, bio, playing_since, is_guest, created_by, created_at)
   on public.users to anon, authenticated;
+grant insert (display_name, rank_value, is_guest, created_by)
+  on public.users to authenticated;
 grant update (display_name, rank_value, club_id, bio, playing_since)
   on public.users to authenticated;
 
@@ -239,10 +253,13 @@ create policy "clubs are public" on public.clubs
 -- users: hồ sơ công khai; chỉ chủ hồ sơ được sửa (các cột đã giới hạn bằng GRANT)
 create policy "players are public" on public.users
   for select using (true);
-create policy "players edit own profile" on public.users
+create policy "members add guest opponents" on public.users
+  for insert to authenticated
+  with check (is_guest and created_by = public.current_user_id());
+create policy "players edit own profile or their guests" on public.users
   for update to authenticated
-  using (id = public.current_user_id())
-  with check (id = public.current_user_id());
+  using (id = public.current_user_id() or (is_guest and created_by = public.current_user_id()))
+  with check (id = public.current_user_id() or (is_guest and created_by = public.current_user_id()));
 
 -- matches: ván đã xác nhận công khai; ván pending/rejected chỉ hai người chơi thấy
 create policy "confirmed matches are public" on public.matches

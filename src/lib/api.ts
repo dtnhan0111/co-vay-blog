@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { getViewer } from "@/lib/auth";
 import { DataError, type Player } from "@/lib/data/types";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 type Handler<C> = (request: Request, context: C) => Promise<Response>;
 
 /** Bọc route handler: chuyển lỗi miền dữ liệu / validate thành JSON `{ error }` nhất quán. */
 export function route<C = unknown>(handler: Handler<C>): Handler<C> {
   return async (request, context) => {
+    if (!isSupabaseConfigured) {
+      return NextResponse.json({ error: "Máy chủ chưa được kết nối cơ sở dữ liệu." }, { status: 503 });
+    }
     try {
       return await handler(request, context);
     } catch (error) {

@@ -1,8 +1,11 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { SetupNotice } from "@/components/layout/setup-notice";
 import { SiteHeader } from "@/components/layout/site-header";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
+  if (!isSupabaseConfigured) return <SetupNotice />;
   return (
     <>
       <SiteHeader />

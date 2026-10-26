@@ -23,9 +23,9 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 
 **F1 · Đăng nhập Google**
 - F1.1 Đăng nhập bằng Google qua Supabase Auth (OAuth).
-- F1.2 Lần đầu đăng nhập: nếu email trùng một hồ sơ kỳ thủ đã được tạo sẵn (seed/admin) → *nhận hồ sơ* đó; ngược lại tạo hồ sơ mới.
+- F1.2 Lần đầu đăng nhập: nếu email trùng một hồ sơ kỳ thủ đã được tạo sẵn (admin) → *nhận hồ sơ* đó; ngược lại tạo hồ sơ mới.
 - F1.3 Người chưa đăng nhập vẫn xem được feed, kỳ thủ, thống kê (công khai); các hành động ghi/xác nhận/đặt quân cần đăng nhập.
-- F1.4 Chế độ **demo** (khi chưa cấu hình Supabase): chọn một kỳ thủ mẫu để trải nghiệm toàn bộ luồng.
+- F1.4 Chưa cấu hình Supabase thì app hiện màn hình "Kỳ quán chưa mở cửa" (không có chế độ demo, không có dữ liệu mẫu).
 
 **F2 · Danh bạ kỳ thủ (Player Directory)**
 - F2.1 Lưới thẻ kỳ thủ: avatar quân cờ, tên, hạng (kyu/dan), CLB, thành tích.
@@ -33,7 +33,7 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - F2.3 Thẻ CLB hoạt động như bộ lọc (tên, lịch sinh hoạt, địa chỉ, số thành viên).
 
 **F3 · Ghi ván (Record Match)**
-- F3.1 Chọn đối thủ (gợi ý: đối thủ gần đây + tìm kiếm).
+- F3.1 Chọn đối thủ: thành viên được gợi ý theo tên (đối thủ gần đây + tìm kiếm). Đối thủ chưa dùng app: gõ tên tự do → tạo **hồ sơ khách**; ván với khách được ghi ngay, gắn nhãn "Ghi một phía" và không tính vào Bảng vàng.
 - F3.2 Chọn màu mình cầm (Đen/Trắng) và kết quả (Tôi thắng / Tôi thua).
 - F3.3 Cách thắng: **Điểm** / **Đối phương bỏ cuộc** / **Hết giờ**. Nếu Điểm → nhập chênh lệch (bội số 0.5, > 0). Bỏ cuộc/Hết giờ → không có chênh lệch.
 - F3.4 Ngày (mặc định hôm nay, không cho tương lai), địa điểm (chọn CLB hoặc gõ tự do; nhớ lần cuối), ghi chú (≤ 280 ký tự).
@@ -84,7 +84,6 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - **Truy cập**: tương phản AA trên cả sáng/tối, trạng thái không chỉ bằng màu, `prefers-reduced-motion` tắt animation quân cờ.
 - **I18n**: giao diện tiếng Việt; thuật ngữ cờ Vây chuẩn (Đen/Trắng, chấp, hết giờ, bỏ cuộc).
 - **Dark mode**: "Trà quán ban đêm" — nâu than + quân cờ ấm.
-- **Khả năng chạy không cần backend**: demo mode với dữ liệu mẫu thực tế (có thể chạy ngay `npm run dev`).
 
 ### 1.4 Ngoài phạm vi MVP
 Xếp hạng Elo tự động, giải đấu, tải SGF, thông báo push/email, phân quyền admin UI, tự động xác nhận sau N ngày (xem README → Roadmap).
@@ -174,7 +173,8 @@ erDiagram
     uuid club_id FK
     text bio
     smallint playing_since
-    boolean is_admin
+    boolean is_guest "khách: người chưa dùng app"
+    uuid created_by FK "người tạo khách"
     timestamptz created_at
   }
   MATCHES {
@@ -223,14 +223,12 @@ erDiagram
 .
 ├── archive/co-vay-blog-v1/        # blog cũ (đã lưu trữ)
 ├── docs/DESIGN.md                 # tài liệu này
-├── scripts/generate-seed-sql.ts   # sinh supabase/seed.sql từ cùng nguồn dữ liệu mẫu với demo mode
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/
 │   │   └── 20260101000000_init.sql   # enum, bảng, index, trigger, RLS
-│   └── seed.sql                       # (sinh tự động) CLB, kỳ thủ, ván, xác nhận
 └── src/
-    ├── middleware.ts                  # làm mới session Supabase (bỏ qua ở demo mode)
+    ├── middleware.ts                  # làm mới session Supabase (bỏ qua khi chưa cấu hình)
     ├── types/database.ts              # kiểu Supabase (định dạng `supabase gen types`)
     ├── app/
     │   ├── layout.tsx · globals.css · loading.tsx · not-found.tsx
@@ -246,12 +244,11 @@ erDiagram
     │   │   └── login/page.tsx
     │   ├── auth/callback/route.ts · auth/signout/route.ts
     │   └── api/
-    │       ├── players/route.ts · players/[id]/route.ts      # GET, PATCH (chủ hồ sơ)
+    │       ├── players/route.ts · players/[id]/route.ts      # GET, POST (tạo khách), PATCH
     │       ├── matches/route.ts · matches/[id]/route.ts
     │       ├── matches/[id]/confirm/route.ts
     │       ├── matches/[id]/kudos/route.ts
-    │       ├── head-to-head/route.ts · stats/route.ts
-    │       └── demo/login/route.ts
+    │       └── head-to-head/route.ts · stats/route.ts
     ├── components/
     │   ├── ui/                         # shadcn/ui (button, card, input, tabs, dialog, sheet, select, textarea, badge, skeleton, sonner…)
     │   ├── go/                         # ngôn ngữ thị giác: Stone, StoneAvatar, StoneLoader, BoardBackdrop, WoodCard, ActivityBoard, FormStones, StoneStack…
@@ -262,13 +259,12 @@ erDiagram
     │   └── stats/                      # Leaderboard, WeeklyStones, MethodBar, RankDistribution, RangeTabs
     └── lib/
         ├── supabase/ (client · server · middleware)
-        ├── data/ (types · index · supabase · demo)   # repository, hai hiện thực chung một interface
-        ├── seed/ (clubs · players · matches)         # dữ liệu mẫu xác định (seeded PRNG)
+        ├── data/ (types · index · supabase)          # repository
         ├── auth.ts · stats.ts · rank.ts · format.ts · validators.ts · utils.ts
 ```
 
 **Quyết định kiến trúc**
-- **Repository pattern**: `lib/data` có một interface, hai hiện thực (Supabase / Demo in-memory). Trang & API chỉ biết interface → chạy được ngay không cần backend, chuyển Supabase chỉ bằng biến môi trường.
+- **Repository pattern**: `lib/data` có một interface (`Repository`) với hiện thực Supabase; trang & API chỉ biết interface.
 - **Thống kê tính ở một nơi** (`lib/stats.ts`, hàm thuần) → test được, dùng chung cho profile / H2H / stats / API.
 - **Đọc bằng RSC, ghi bằng Route Handlers** (zod validate) + `router.refresh()`.
 

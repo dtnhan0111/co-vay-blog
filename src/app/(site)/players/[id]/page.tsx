@@ -24,8 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: player?.display_name ?? "Kỳ thủ" };
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProfilePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ edit?: string }> }) {
   const { id } = await params;
+  const { edit } = await searchParams;
   const today = todayVN();
   const [players, clubMap, clubs, viewer, matches] = await Promise.all([
     getPlayerMap(),
@@ -39,6 +40,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   const club = player.club_id ? clubMap.get(player.club_id) : undefined;
   const isMe = viewer?.id === id;
+  const canEdit = isMe || (!!viewer && player.is_guest && player.created_by === viewer.id);
   const stats = playerStats(id, matches);
   const rivals = topOpponents(id, matches, 4);
   const venues = favoriteVenues(id, matches, 3);
@@ -65,6 +67,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-4xl leading-none font-bold sm:text-5xl">{player.display_name}</h1>
               <RankBadge rank={player.rank_value} className="border-ink/50 text-ink dark:border-paper/50 dark:text-paper" />
+              {player.is_guest && <span className="rounded-full bg-ink/15 px-2.5 py-0.5 text-xs font-medium dark:bg-paper/15">Khách · chưa dùng app</span>}
             </div>
             <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink/80 dark:text-paper/80">
               {club && (
@@ -75,14 +78,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               {player.playing_since && (
                 <span>
                   Chơi cờ từ {player.playing_since}
-                  {years ? ` · ${years} năm` : ""}
+                  {years ? `, được ${years} năm` : ""}
                 </span>
               )}
             </p>
             {player.bio && <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink/90 italic dark:text-paper/90">“{player.bio}”</p>}
             <div className="mt-4 flex flex-wrap gap-2">
-              {isMe ? (
-                <ProfileEditDialog player={player} clubs={clubs.map((c) => ({ id: c.id, name: c.name }))} />
+              {canEdit ? (
+                <ProfileEditDialog defaultOpen={edit === "1"} player={player} clubs={clubs.map((c) => ({ id: c.id, name: c.name }))} />
               ) : (
                 <>
                   <Button asChild>
@@ -200,7 +203,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </section>
 
           <section className="space-y-3">
-            <SectionHeading title="Lịch sử ván" kicker={`${stats.games} ván đã xác nhận`} />
+            <SectionHeading title="Lịch sử ván" description={`${stats.games} ván đã xác nhận`} />
             <ul className="wood-card divide-y divide-border/60 p-2">
               {matches.slice(0, 20).map((m) => (
                 <MatchListItem key={m.id} match={m} perspectiveId={id} today={today} />

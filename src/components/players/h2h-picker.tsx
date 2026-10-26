@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { formatRankShort } from "@/lib/rank";
 
-type Props = { players: { id: string; display_name: string; rank_value: number }[]; a: string | null; b: string | null };
+type Props = { players: { id: string; display_name: string; rank_value: number; is_guest: boolean }[]; a: string | null; b: string | null };
 
 export function H2HPicker({ players, a, b }: Props) {
   const router = useRouter();
@@ -25,7 +25,7 @@ export function H2HPicker({ players, a, b }: Props) {
       .filter((p) => p.id !== exclude)
       .map((p) => (
         <option key={p.id} value={p.id}>
-          {p.display_name} · {formatRankShort(p.rank_value)}
+          {p.display_name} · {formatRankShort(p.rank_value)}{p.is_guest ? " · khách" : ""}
         </option>
       ));
 

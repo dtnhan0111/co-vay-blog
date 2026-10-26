@@ -68,8 +68,6 @@ function fail(error: { code?: string; message: string }): never {
 }
 
 export const supabaseRepository: Repository = {
-  mode: "supabase",
-
   getViewer: loadViewer,
 
   async listPlayers() {
@@ -167,10 +165,13 @@ export const supabaseRepository: Repository = {
         handicap: input.handicap,
         recorded_by: recorderId,
       })
-      .select(MATCH_SELECT)
+      .select("id")
       .single();
     if (error) fail(error);
-    return toView(data as unknown as MatchWithRelations);
+    // Trigger có thể đã tự xác nhận ván (đối thủ là khách), nên đọc lại trạng thái cuối.
+    const created = await this.getMatch(data.id);
+    if (!created) throw new Error("Không đọc lại được ván vừa ghi.");
+    return created;
   },
 
   async respondToMatch(matchId, viewerId, decision, reason) {
@@ -250,6 +251,17 @@ export const supabaseRepository: Repository = {
       .maybeSingle();
     if (error) fail(error);
     if (!data) throw new DataError("Không thể cập nhật hồ sơ này.", 403);
+    return data as Player;
+  },
+
+  async createGuest(input, creatorId) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("users")
+      .insert({ ...input, is_guest: true, created_by: creatorId })
+      .select(USER_PUBLIC_COLUMNS)
+      .single();
+    if (error) fail(error);
     return data as Player;
   },
 };

@@ -10,7 +10,7 @@ export function StonePile({ count, color, align }: { count: number; color: Stone
   return (
     <div className={cn("flex flex-wrap content-start gap-1", align === "end" ? "justify-end" : "justify-start")} aria-hidden>
       {Array.from({ length: shown }, (_, i) => (
-        <Stone key={i} color={color} size={22} className="animate-stone-drop" style={{ animationDelay: `${i * 35}ms` }} />
+        <Stone key={i} color={color} size={22} />
       ))}
       {count > MAX && <span className="self-center px-1 text-xs font-semibold text-muted-foreground">+{count - MAX}</span>}
     </div>

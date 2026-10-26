@@ -43,6 +43,8 @@ export type Database = {
           club_id: string | null;
           bio: string | null;
           playing_since: number | null;
+          is_guest: boolean;
+          created_by: string | null;
           created_at: string;
         };
         Insert: {
@@ -54,10 +56,19 @@ export type Database = {
           club_id?: string | null;
           bio?: string | null;
           playing_since?: number | null;
+          is_guest?: boolean;
+          created_by?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>;
         Relationships: [
+          {
+            foreignKeyName: "users_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "users_club_id_fkey";
             columns: ["club_id"];
@@ -224,4 +235,4 @@ export type Enums<T extends keyof PublicSchema["Enums"]> = PublicSchema["Enums"]
 /** Các cột của `users` mà client được phép đọc (không gồm email, auth_id). */
 export type UserPublicRow = Omit<Tables<"users">, "email" | "auth_id">;
 export const USER_PUBLIC_COLUMNS =
-  "id, display_name, rank_value, club_id, bio, playing_since, created_at" as const;
+  "id, display_name, rank_value, club_id, bio, playing_since, is_guest, created_by, created_at" as const;

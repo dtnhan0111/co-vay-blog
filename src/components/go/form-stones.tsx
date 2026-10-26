@@ -9,9 +9,9 @@ export function FormStones({ form, size = 28 }: { form: { matchId: string; won: 
   const wins = form.filter((f) => f.won).length;
   return (
     <ul className="flex flex-wrap items-center gap-1.5" aria-label={`${form.length} ván gần nhất: ${wins} thắng, ${form.length - wins} thua`}>
-      {form.map((f, i) => (
+      {form.map((f) => (
         <li key={f.matchId} title={f.won ? "Thắng" : "Thua"}>
-          <Stone color={f.won ? "black" : "white"} size={size} className="animate-stone-drop" style={{ animationDelay: `${i * 40}ms` }}>
+          <Stone color={f.won ? "black" : "white"} size={size}>
             <span className="stone__glyph" aria-hidden>
               {f.won ? "T" : "B"}
             </span>

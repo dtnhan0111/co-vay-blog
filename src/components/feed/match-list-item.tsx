@@ -20,7 +20,7 @@ export function MatchListItem({ match: m, perspectiveId, today }: { match: Match
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="size-3 shrink-0" />
             <span className="truncate">
-              {relativeDay(m.played_on, today)} · {m.location}
+              {relativeDay(m.played_on, today)}, {m.location}
             </span>
           </p>
         </div>

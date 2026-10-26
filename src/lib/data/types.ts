@@ -61,10 +61,8 @@ export class DataError extends Error {
   }
 }
 
-/** Hợp đồng chung cho hai hiện thực: Supabase và Demo (bộ nhớ). */
+/** Hợp đồng truy cập dữ liệu — hiện thực duy nhất là Supabase (lib/data/supabase.ts). */
 export interface Repository {
-  readonly mode: "supabase" | "demo";
-
   /** Kỳ thủ đang đăng nhập, hoặc null. */
   getViewer(): Promise<Player | null>;
 
@@ -90,4 +88,6 @@ export interface Repository {
   cancelMatch(matchId: string, viewerId: string): Promise<void>;
   toggleKudos(matchId: string, viewerId: string): Promise<{ active: boolean; count: number }>;
   updatePlayer(id: string, patch: PlayerPatch): Promise<Player>;
+  /** Tạo hồ sơ "khách" cho một đối thủ chưa dùng app. */
+  createGuest(input: { display_name: string; rank_value: number }, creatorId: string): Promise<Player>;
 }

@@ -19,11 +19,10 @@ export const GET = route<IdContext>(async (_request, { params }) => {
   });
 });
 
-/** PATCH /api/players/:id — chủ hồ sơ sửa thông tin của mình. */
+/** PATCH /api/players/:id — chủ hồ sơ (hoặc người đã tạo hồ sơ khách) sửa thông tin. RLS quyết định quyền. */
 export const PATCH = route<IdContext>(async (request, { params }) => {
   const { id } = await params;
-  const viewer = await requireViewerApi();
-  if (viewer.id !== id) throw new DataError("Bạn chỉ có thể sửa hồ sơ của chính mình.", 403);
+  await requireViewerApi();
   const patch = profilePatchSchema.parse(await readJson(request));
   return NextResponse.json({ player: await repo.updatePlayer(id, patch) });
 });

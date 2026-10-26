@@ -27,6 +27,7 @@ type Props = {
   clubs: ClubOption[];
   defaultLocation: { location: string; clubId: string | null };
   initialOpponentId?: string | null;
+  viewerRank: number;
 };
 
 const SCORE_CHIPS = [0.5, 1.5, 2.5, 3.5, 5.5, 7.5, 10.5, 15.5, 20.5];
@@ -84,7 +85,7 @@ function Step({ n, title, children, error }: { n: number; title: string; childre
   );
 }
 
-export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocation, initialOpponentId = null }: Props) {
+export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocation, initialOpponentId = null, viewerRank }: Props) {
   const router = useRouter();
   const [opponentId, setOpponentId] = useState<string | null>(initialOpponentId);
   const [color, setColor] = useState<StoneColor | null>(null);
@@ -100,7 +101,8 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
   const [handicap, setHandicap] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
-  const [sentTo, setSentTo] = useState<PickerPlayer | null>(null);
+  const [sentTo, setSentTo] = useState<{ player: PickerPlayer; confirmed: boolean } | null>(null);
+  const [guests, setGuests] = useState<PickerPlayer[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
 
   // Nhớ nơi đánh lần trước trên thiết bị này.
@@ -117,7 +119,8 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
   }, []);
 
   const scoreNumber = score === "" ? null : Number(score);
-  const opponent = useMemo(() => everyone.find((p) => p.id === opponentId) ?? null, [everyone, opponentId]);
+  const allPlayers = useMemo(() => [...guests, ...everyone], [guests, everyone]);
+  const opponent = useMemo(() => allPlayers.find((p) => p.id === opponentId) ?? null, [allPlayers, opponentId]);
   const opponentFirst = opponent?.display_name.split(/\s+/).at(-1) ?? "đối thủ";
 
   function bumpScore(delta: number) {
@@ -169,11 +172,11 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
     setErrors({});
     setPending(true);
     try {
-      await api("/api/matches", { method: "POST", json: parsed.data });
+      const { match } = await api<{ match: { status: string } }>("/api/matches", { method: "POST", json: parsed.data });
       try {
         localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({ location, clubId }));
       } catch {}
-      setSentTo(opponent);
+      setSentTo(opponent && { player: opponent, confirmed: match.status === "confirmed" });
       router.refresh();
       topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
@@ -203,9 +206,15 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
           <Stone color="white" size={64} className="animate-stone-drop" style={{ animationDelay: "160ms" }} />
         </div>
         <h2 className="text-3xl font-bold">Đã đặt quân cuối.</h2>
-        <p className="mx-auto max-w-xs text-[15px] text-ink/80 dark:text-paper/80">
-          Mình đã mời <b>{sentTo.display_name}</b> xác nhận. Khi họ gật đầu, ván này sẽ lên kỳ phổ và được tính vào thống kê của cả hai.
-        </p>
+        {sentTo.confirmed ? (
+          <p className="mx-auto max-w-xs text-[15px] text-ink/80 dark:text-paper/80">
+            Ván với <b>{sentTo.player.display_name}</b> đã được ghi ngay vì họ chưa dùng app. Khi họ tham gia, bạn có thể mời họ vào kỳ quán.
+          </p>
+        ) : (
+          <p className="mx-auto max-w-xs text-[15px] text-ink/80 dark:text-paper/80">
+            Mình đã mời <b>{sentTo.player.display_name}</b> xác nhận. Khi họ gật đầu, ván này sẽ lên kỳ phổ và được tính vào thống kê của cả hai.
+          </p>
+        )}
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Button size="lg" onClick={reset}>
             <Plus /> Ghi ván khác
@@ -224,10 +233,17 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
     <form onSubmit={submit} noValidate className="space-y-7">
       <div ref={topRef} />
       <Step n={1} title="Bạn đã đánh với ai?" error={errors.opponent_id}>
+        {allPlayers.length === 0 && (
+          <p className="paper-card px-4 py-3 text-sm text-muted-foreground">
+            Chưa có kỳ thủ nào khác trong kỳ quán. Bấm “Tìm khác” và gõ tên đối thủ, họ không cần có tài khoản.
+          </p>
+        )}
         <div data-invalid={errors.opponent_id ? "" : undefined}>
           <OpponentPicker
             recents={recents}
-            everyone={everyone}
+            everyone={allPlayers}
+            defaultRank={viewerRank}
+            onGuestCreated={(g) => setGuests((list) => [g, ...list])}
             value={opponentId}
             onChange={(id) => {
               setOpponentId(id);
@@ -286,7 +302,7 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
           ]}
         />
         {method === "points" && (
-          <div className="wood-inset animate-rise space-y-3 rounded-2xl p-3" data-invalid={errors.score_difference ? "" : undefined}>
+          <div className="wood-inset space-y-3 rounded-2xl p-3" data-invalid={errors.score_difference ? "" : undefined}>
             <div className="flex items-center justify-between gap-3">
               <span className="pl-1 text-sm text-muted-foreground">{result === "loss" ? "Bạn thua" : "Bạn hơn"}</span>
               <div className="flex items-center gap-2">
@@ -425,10 +441,12 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
 
       <div className="space-y-2 pt-1">
         <Button type="submit" size="lg" className="h-14 w-full text-base" pending={pending}>
-          {!pending && <Check />} Đặt quân cuối — gửi cho {opponent ? opponentFirst : "đối thủ"}
+          {!pending && <Check />} {opponent?.isGuest ? "Đặt quân cuối — ghi ván" : `Đặt quân cuối — gửi cho ${opponent ? opponentFirst : "đối thủ"}`}
         </Button>
         <p className="text-center text-xs text-muted-foreground">
-          Ván chỉ được tính sau khi {opponent ? opponent.display_name : "đối thủ"} xác nhận.
+          {opponent?.isGuest
+            ? `${opponent.display_name} chưa dùng app nên ván được ghi ngay, không cần xác nhận.`
+            : `Ván chỉ được tính sau khi ${opponent ? opponent.display_name : "đối thủ"} xác nhận.`}
         </p>
       </div>
     </form>
