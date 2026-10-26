@@ -18,7 +18,7 @@ type Props = {
 
 export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props) {
   const headline = !viewer
-    ? "Ván cờ nào ngồi đối diện cũng đáng được nhớ."
+    ? "Cuộc cờ đã tàn, kỳ phổ còn lưu."
     : pendingCount > 0
       ? `${givenName(viewer.display_name)} ơi, có ${pendingCount} ván đang chờ bạn xác nhận.`
       : daysSinceLastGame === null
@@ -38,7 +38,7 @@ export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props)
       <div className="relative max-w-[25rem]">
         <h1 className="text-[2.4rem] leading-[1.06] font-bold text-ink sm:text-5xl dark:text-paper">{headline}</h1>
         <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-ink/80 dark:text-paper/80">
-          {viewer ? community : "Đánh xong một ván ở CLB, quán trà hay nhà bạn bè, ghi lại trong vài giây. Đối thủ gật đầu, ván cờ vào kỳ phổ của cả nhóm."}
+          {viewer ? community : "Đối cục xong ở câu lạc bộ, quán trà hay nhà bạn hữu, ghi lại trong vài nét. Đối thủ gật đầu, ván cờ vào kỳ phổ của cả kỳ quán."}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2.5">
