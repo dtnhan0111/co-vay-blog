@@ -1,46 +1,83 @@
-# Cờ Vây Việt — Blog
+# Go Đà Nẵng — kỳ quán số của người chơi cờ Vây
 
-Dự án blog cộng đồng cờ vây Việt Nam. Mục tiêu: truyền tải và mở rộng phong trào cờ vây thông qua nội dung về nhân vật, CLB, kiến thức nhập môn, tin tức và văn hóa.
+Cộng đồng cờ Vây **ngoài đời** của Đà Nẵng. Giống Strava cho kỳ thủ: không chơi online, mà **ghi lại những ván đã đánh thật** (tại CLB, quán trà, nhà bạn bè), để đối thủ xác nhận, rồi cả cộng đồng cùng nhìn lại.
 
-## Cấu trúc thư mục
+> Đây không phải một hệ thống quản lý. Là một quán trà có bàn cờ: nền lưới bàn cờ, thẻ gỗ, avatar là quân đen/trắng, và "kudos" là *đặt một quân*.
 
-```
-co-vay-blog/
-├── index.html              # Mockup trang chủ (HTML + CSS thuần)
-├── assets/
-│   ├── css/
-│   │   └── styles.css      # Toàn bộ style của trang chủ
-│   ├── js/
-│   │   ├── exercise-manifest.js  # Dữ liệu 200 ảnh bài tập, sinh từ content/*.pdf
-│   │   └── exercises.js          # Logic chọn ngẫu nhiên 5 bài/ngày + lightbox
-│   └── exercises/
-│       └── topic-01 … topic-10/  # Ảnh bài tập đã cắt từ sách, theo 10 chủ đề
-├── content/
-│   ├── co-vay-la-gi-khac-co-vua-the-nao.md   # Bài viết nhập môn (bản nháp)
-│   └── Ảnh màn hình...pdf   # Sách "어린이바둑수련장 6" (nguồn ảnh bài tập)
-└── README.md
+Tài liệu thiết kế đầy đủ (yêu cầu chức năng, user flow, ERD, cấu trúc thư mục, wireframe): [docs/DESIGN.md](docs/DESIGN.md).
+
+## Chạy nhanh (demo mode — không cần backend)
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-## Trạng thái hiện tại
+Khi chưa cấu hình Supabase, app chạy ở **demo mode** với 20 kỳ thủ, 5 CLB và ~200 ván **hư cấu**, ngày tháng luôn tính theo hôm nay. Ở trang `/login` bạn chọn "ngồi vào ghế" một kỳ thủ mẫu (gợi ý: *Nguyễn Thị Thu Hiền* — đang có một lời mời xác nhận chờ, một ván đã gửi, một ván bị báo sai).
 
-- `index.html` là **mockup tĩnh** cho trang chủ, dùng để thống nhất bố cục và định hướng thiết kế trước khi dựng thành website thật.
-- Font dùng: `Noto Serif` (tiêu đề) + `Be Vietnam Pro` (nội dung), load qua Google Fonts.
-- Bảng màu: xem biến CSS ở đầu file `styles.css` (`--ink`, `--paper`, `--wood`, `--seal`, `--stone-white`).
-- Thư mục `content/` chứa bài viết đã soạn, dùng làm nội dung mẫu khi build trang bài viết chi tiết.
+Dữ liệu demo sống trong bộ nhớ server, khởi động lại là về trạng thái ban đầu.
 
-## Các chuyên mục nội dung
+Thử luồng chính trong hai tab ẩn danh: Hiền ghi ván với *Đặng Hoài Nam* → đăng nhập demo bằng Nam → "Đúng rồi" → ván lên kỳ phổ.
 
-1. **Nhân vật** — phỏng vấn kỳ thủ, câu chuyện cá nhân
-2. **CLB & Cộng đồng** — giới thiệu các CLB (Bình Nguyên, Đà Nẵng...)
-3. **Kiến thức nhập môn** — luật chơi, thuật ngữ, lộ trình học
-4. **Tin tức & Sự kiện** — lịch giải, tường thuật, tin liên đoàn
-5. **Văn hóa & Câu chuyện** — văn hóa Đông Á, AI và cờ vây
-6. **Bài tập cờ vây hôm nay** — mỗi ngày random 5 bài tập từ 5/10 chủ đề (bố cục, sống chết, mạch, xâm nhập, tấn công, định thức, tàn cuộc…), lấy từ 200 trang đã cắt trong `assets/exercises/`. Ngày chẵn dùng chủ đề 1–5, ngày lẻ dùng chủ đề 6–10 (xem `assets/js/exercises.js`).
+## Dùng Supabase thật
 
-## Việc cần làm tiếp theo (gợi ý)
+1. Tạo project Supabase (hoặc `supabase start` để chạy local).
+2. Áp schema và dữ liệu mẫu:
+   ```bash
+   supabase db reset            # chạy migrations/ + seed.sql (local)
+   # hoặc dán supabase/migrations/20260101000000_init.sql, rồi supabase/seed.sql vào SQL editor
+   ```
+3. Bật Google: *Authentication → Providers → Google* (tạo OAuth client ở Google Cloud Console; redirect URI là callback của Supabase). Thêm `http://localhost:3000/auth/callback` vào *Redirect URLs*.
+4. Tạo `.env.local`:
+   ```bash
+   cp .env.example .env.local   # điền NEXT_PUBLIC_SUPABASE_URL và NEXT_PUBLIC_SUPABASE_ANON_KEY
+   ```
+5. `npm run dev`.
 
-- [ ] Viết chi tiết nội dung từng bài trong 5 chuyên mục
-- [ ] Dựng trang chi tiết bài viết (`post.html` hoặc chuyển sang framework như Next.js/Astro nếu cần CMS)
-- [ ] Thêm trang "Bản đồ CLB toàn quốc"
-- [ ] Kết nối form "Gửi thông tin CLB" ở cuối trang chủ
-- [ ] Responsive testing kỹ trên mobile
+**Nhận lại hồ sơ mẫu khi đăng nhập:** đăng nhập Google lần đầu sẽ *nhận* hồ sơ có cùng email (không phân biệt hoa thường), nếu không có thì tạo hồ sơ mới. Để nhập vai một kỳ thủ trong seed:
+
+```sql
+update public.users set email = 'ban@gmail.com' where display_name = 'Nguyễn Thị Thu Hiền';
+```
+
+Sau thay đổi schema, sinh lại kiểu bằng `supabase gen types typescript --local > src/types/database.ts` (file hiện tại được viết tay theo đúng định dạng đó).
+
+## Kiến trúc ngắn gọn
+
+| Lớp | Ở đâu | Ghi chú |
+|-----|-------|---------|
+| Schema, RLS, trigger | `supabase/migrations/` | Ván mới → trigger tạo yêu cầu xác nhận → đối thủ trả lời → trigger cập nhật `matches.status`. Email không bao giờ lộ ra client (column-level grant). |
+| Dữ liệu mẫu | `src/lib/seed/source.ts` | Một nguồn cho cả demo mode và `supabase/seed.sql` (`npm run seed:sql`). |
+| Repository | `src/lib/data/` | Một interface, hai hiện thực (Supabase / Demo). Biến môi trường quyết định. |
+| Thống kê | `src/lib/stats.ts` | Hàm thuần, có test (`npm test`); profile, đối đầu, thống kê, API đều dùng chung. |
+| API | `src/app/api/**` | `GET/POST /api/matches`, `GET/DELETE /api/matches/:id`, `POST /api/matches/:id/confirm`, `POST /api/matches/:id/kudos`, `GET /api/players`, `GET/PATCH /api/players/:id`, `GET /api/head-to-head`, `GET /api/stats`. Validate bằng zod. |
+| UI | `src/components/go/` | Ngôn ngữ thị giác: quân cờ, avatar, thẻ gỗ, bàn cờ hoạt động 19×19, loader quân rơi. |
+
+Trang: Trang chủ (kỳ phổ + khay xác nhận) · Ghi ván · Kỳ thủ · Hồ sơ · Đối đầu · Thống kê · Chi tiết ván · Đăng nhập.
+
+## Scripts
+
+```bash
+npm run dev          # phát triển
+npm run build        # build production
+npm run typecheck    # tsc --noEmit
+npm run lint
+npm test             # test thống kê (node:test + tsx)
+npm run seed:sql     # sinh lại supabase/seed.sql
+```
+
+## Ghi chú thiết kế & giới hạn đã biết
+
+- **Bảng thứ năm `kudos`** được thêm ngoài 4 bảng yêu cầu để phục vụ "đặt một quân". Bỏ được mà không ảnh hưởng phần còn lại.
+- Thống kê tính trong ứng dụng từ toàn bộ ván đã xác nhận — phù hợp quy mô một thành phố (hàng nghìn ván). Khi lớn hơn, chuyển sang SQL view / materialized view.
+- Danh sách kỳ thủ chỉ gồm người đã có hồ sơ (đã đăng nhập hoặc được tạo sẵn). Chưa có "thêm khách vãng lai".
+- Ván chưa được xác nhận không bao giờ hết hạn tự động.
+- Dữ liệu demo hoàn toàn hư cấu.
+
+## Roadmap gợi ý
+
+Tự xác nhận sau N ngày · thông báo (email/Zalo) khi có lời mời · tải kỳ phổ SGF kèm ván · giải đấu nội bộ CLB · xếp hạng Elo · trang CLB riêng · vai trò admin để tạo hồ sơ sẵn.
+
+---
+
+Bản blog cờ vây cũ (HTML tĩnh) được lưu ở [archive/co-vay-blog-v1/](archive/co-vay-blog-v1/).
