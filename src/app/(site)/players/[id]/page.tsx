@@ -62,7 +62,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       <BoardPanel className="px-5 py-7 sm:px-9 sm:py-9">
         <Stone color={player.rank_value % 2 === 0 ? "white" : "black"} size={110} className="pointer-events-none absolute -top-8 -right-8 opacity-25 sm:[--size:190px]!" aria-hidden />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-          <StoneAvatar name={player.display_name} size={104} labelled className="shadow-xl" />
+          <StoneAvatar player={player} size={104} labelled className="shadow-xl" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-4xl leading-none font-bold sm:text-5xl">{player.display_name}</h1>
@@ -172,7 +172,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                         href={`/head-to-head?a=${id}&b=${r.opponentId}`}
                         className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-foreground/5"
                       >
-                        <StoneAvatar name={o.display_name} size={40} />
+                        <StoneAvatar player={o} size={40} />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{o.display_name}</span>
                           <span className="block text-xs text-muted-foreground">{r.games} ván</span>

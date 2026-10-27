@@ -111,7 +111,7 @@ export function CommentsPanel({ matchId, comments, viewer, step, totalMoves, onJ
           <ul className="space-y-3">
             {comments.map((c) => (
               <li key={c.id} className="paper-card flex gap-3 p-3">
-                <StoneAvatar name={c.author.display_name} size={34} className="mt-0.5" />
+                <StoneAvatar player={c.author} size={34} className="mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
                     <Link href={`/players/${c.author.id}`} className="font-semibold hover:underline">

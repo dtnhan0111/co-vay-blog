@@ -3,6 +3,7 @@ import { ArrowRight, Plus } from "lucide-react";
 import { BoardPanel } from "@/components/go/board-panel";
 import { HeroBoard } from "@/components/go/hero-board";
 import { Button } from "@/components/ui/button";
+import { MemberStrip } from "./member-strip";
 import type { Player } from "@/lib/data/types";
 
 function givenName(name: string) {
@@ -14,9 +15,10 @@ type Props = {
   pendingCount: number;
   daysSinceLastGame: number | null;
   totals: { players: number; matches: number; clubs: number; week: number };
+  recentMembers: Player[];
 };
 
-export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props) {
+export function Hero({ viewer, pendingCount, daysSinceLastGame, totals, recentMembers }: Props) {
   const name = viewer ? givenName(viewer.display_name) : "";
   const headline = !viewer
     ? "Bàn cờ còn đó, cố nhân nơi đâu?"
@@ -33,7 +35,7 @@ export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props)
   const community =
     totals.matches === 0
       ? "Chưa có ván nào trên kỳ phổ. Ván bạn ghi hôm nay sẽ là ván đầu tiên."
-      : `${totals.players} kỳ thủ đã ghi ${totals.matches} ván tại ${totals.clubs || "nhiều"} câu lạc bộ, ${totals.week} ván trong 7 ngày qua.`;
+      : `${totals.matches} ván đã được ghi${totals.clubs ? ` tại ${totals.clubs} câu lạc bộ` : ""}, ${totals.week} ván trong 7 ngày qua.`;
   const away = viewer && pendingCount === 0 && daysSinceLastGame !== null && daysSinceLastGame >= 3 ? `Đã ${daysSinceLastGame} ngày bạn chưa ghi ván. ` : "";
 
   return (
@@ -59,7 +61,8 @@ export function Hero({ viewer, pendingCount, daysSinceLastGame, totals }: Props)
             </Button>
           )}
         </div>
-        {!viewer && totals.matches > 0 && <p className="mt-5 text-sm text-ink/70 dark:text-paper/70">{community}</p>}
+        <div><MemberStrip total={totals.players} recent={recentMembers} /></div>
+        {!viewer && totals.matches > 0 && <p className="mt-3 text-sm text-ink/70 dark:text-paper/70">{community}</p>}
       </div>
     </BoardPanel>
   );

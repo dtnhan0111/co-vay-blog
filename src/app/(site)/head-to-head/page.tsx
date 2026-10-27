@@ -61,7 +61,7 @@ export default async function HeadToHeadPage({ searchParams }: { searchParams: P
                       href={`/head-to-head?a=${a!.id}&b=${o.id}`}
                       className="wood-inset flex items-center gap-2 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-medium"
                     >
-                      <StoneAvatar name={o.display_name} size={30} />
+                      <StoneAvatar player={o} size={30} />
                       {o.display_name}
                     </Link>
                   );
@@ -77,7 +77,7 @@ export default async function HeadToHeadPage({ searchParams }: { searchParams: P
               {[a, b].map((p, i) => (
                 <div key={p.id} className={i === 0 ? "order-1" : "order-3"}>
                   <Link href={`/players/${p.id}`} className="flex flex-col items-center gap-2 text-center">
-                    <StoneAvatar name={p.display_name} tone={i === 0 ? "black" : "white"} size={84} className="sm:[--size:104px]!" />
+                    <StoneAvatar player={p} tone={i === 0 ? "black" : "white"} size={84} className="sm:[--size:104px]!" />
                     <span className="font-display text-xl leading-tight font-semibold sm:text-2xl">{p.display_name}</span>
                     <RankBadge rank={p.rank_value} className="border-ink/50 text-ink dark:border-paper/50 dark:text-paper" />
                   </Link>

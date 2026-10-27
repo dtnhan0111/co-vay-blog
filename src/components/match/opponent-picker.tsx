@@ -14,7 +14,7 @@ import { api } from "@/lib/client-api";
 import { RANK_OPTIONS } from "@/lib/rank";
 import { cn } from "@/lib/utils";
 
-export type PickerPlayer = { id: string; display_name: string; rank_value: number; clubName: string | null; isGuest: boolean };
+export type PickerPlayer = { id: string; display_name: string; rank_value: number; clubName: string | null; isGuest: boolean; avatar_tone: "black" | "white" | null; avatar_glyph: string | null };
 
 type Props = {
   recents: PickerPlayer[];
@@ -51,7 +51,7 @@ export function OpponentPicker({ recents, everyone, value, onChange, defaultRank
   async function createGuest() {
     setCreating(true);
     try {
-      const { player } = await api<{ player: { id: string; display_name: string; rank_value: number } }>("/api/players", {
+      const { player } = await api<{ player: { id: string; display_name: string; rank_value: number; avatar_tone: "black" | "white" | null; avatar_glyph: string | null } }>("/api/players", {
         method: "POST",
         json: { display_name: trimmed, rank_value: guestRank },
       });
@@ -92,7 +92,7 @@ export function OpponentPicker({ recents, everyone, value, onChange, defaultRank
                 active ? "bg-primary text-primary-foreground shadow-lg" : "wood-inset hover:brightness-[1.03]",
               )}
             >
-              <StoneAvatar name={p.display_name} size={48} className={cn(active && "ring-2 ring-primary-foreground/70")} />
+              <StoneAvatar player={p} size={48} className={cn(active && "ring-2 ring-primary-foreground/70")} />
               <span className="w-full truncate text-xs font-semibold">{p.display_name.split(/\s+/).slice(-2).join(" ")}</span>
               <span className={cn("text-[10px] tabular-nums", active ? "text-primary-foreground/70" : "text-muted-foreground")}>
                 {p.isGuest ? "khách · " : ""}
@@ -138,7 +138,7 @@ export function OpponentPicker({ recents, everyone, value, onChange, defaultRank
                   }}
                   className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left hover:bg-foreground/8"
                 >
-                  <StoneAvatar name={p.display_name} size={40} />
+                  <StoneAvatar player={p} size={40} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{p.display_name}</span>
                     <span className="block truncate text-xs text-muted-foreground">{p.isGuest ? "Chưa dùng app" : (p.clubName ?? "Chưa vào CLB")}</span>

@@ -25,6 +25,8 @@ export default async function RecordPage({ searchParams }: { searchParams: Promi
     rank_value: p.rank_value,
     clubName: p.club_id ? (clubMap.get(p.club_id)?.name ?? null) : null,
     isGuest: p.is_guest,
+    avatar_tone: p.avatar_tone,
+    avatar_glyph: p.avatar_glyph,
   });
 
   const byId = new Map(players.map((p) => [p.id, p]));

@@ -21,8 +21,8 @@ function Versus({ match, viewerId }: { match: MatchView; viewerId: string }) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex -space-x-2.5">
-        <StoneAvatar name={opponent.display_name} tone={color === "black" ? "white" : "black"} size={44} className="ring-2 ring-card" />
-        <StoneAvatar name={me.display_name} tone={color} size={44} className="ring-2 ring-card" />
+        <StoneAvatar player={opponent} tone={color === "black" ? "white" : "black"} size={44} className="ring-2 ring-card" />
+        <StoneAvatar player={me} tone={color} size={44} className="ring-2 ring-card" />
       </div>
       <div className="min-w-0 text-sm">
         <p className="truncate font-semibold">

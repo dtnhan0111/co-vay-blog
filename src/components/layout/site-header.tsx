@@ -16,7 +16,7 @@ export async function SiteHeader() {
         <DesktopNav />
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
-          <UserMenu viewer={viewer && { id: viewer.id, display_name: viewer.display_name, rank_value: viewer.rank_value }} pendingCount={pendingCount} />
+          <UserMenu viewer={viewer && { id: viewer.id, display_name: viewer.display_name, rank_value: viewer.rank_value, avatar_tone: viewer.avatar_tone, avatar_glyph: viewer.avatar_glyph }} pendingCount={pendingCount} />
         </div>
       </div>
     </header>

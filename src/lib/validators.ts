@@ -66,6 +66,8 @@ export const respondSchema = z.object({
   reason: optionalText(280),
 });
 
+const graphemeCount = (s: string) => [...new Intl.Segmenter("vi", { granularity: "grapheme" }).segment(s)].length;
+
 export const profilePatchSchema = z
   .object({
     display_name: z.string().trim().min(2, "Tên quá ngắn").max(60),
@@ -73,6 +75,14 @@ export const profilePatchSchema = z
     club_id: id.nullable(),
     bio: optionalText(280),
     playing_since: z.number().int().min(1950).max(new Date().getFullYear()).nullable(),
+    avatar_tone: z.enum(["black", "white"]).nullable(),
+    avatar_glyph: z
+      .string()
+      .trim()
+      .min(1)
+      .max(8)
+      .refine((v) => graphemeCount(v) <= 2, "Chỉ khắc tối đa 2 ký tự")
+      .nullable(),
   })
   .partial();
 

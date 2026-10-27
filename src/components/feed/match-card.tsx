@@ -39,8 +39,8 @@ export function MatchCard({ match: m, signedIn, today, className, showKudos = tr
     <article className={cn("wood-card relative px-4 pt-3.5 pb-1.5", className)}>
       <div className="flex items-start gap-3">
         <div className="relative mt-0.5 flex shrink-0 -space-x-1.5" aria-hidden>
-          <StoneAvatar name={winner.display_name} tone={winnerColor} size={44} className="relative z-10 ring-2 ring-wood ring-offset-2 ring-offset-card" />
-          <StoneAvatar name={loser.display_name} tone={loserColor} size={38} className="mt-2.5 opacity-90" />
+          <StoneAvatar player={winner} tone={winnerColor} size={44} className="relative z-10 ring-2 ring-wood ring-offset-2 ring-offset-card" />
+          <StoneAvatar player={loser} tone={loserColor} size={38} className="mt-2.5 opacity-90" />
         </div>
 
         <div className="min-w-0 flex-1">

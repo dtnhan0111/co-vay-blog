@@ -36,7 +36,7 @@ export function WeekSidebar({ matches, players, clubs, since }: Props) {
             const l = byId.get(loserOf(upset.m))!;
             return (
               <Link href={`/matches/${upset.m.id}`} className="mt-3 flex items-center gap-3">
-                <StoneAvatar name={w.display_name} size={44} />
+                <StoneAvatar player={w} size={44} />
                 <div className="min-w-0 text-sm">
                   <p>
                     <b>{w.display_name}</b> <RankBadge rank={w.rank_value} className="ml-0.5" />
@@ -61,7 +61,7 @@ export function WeekSidebar({ matches, players, clubs, since }: Props) {
             {hot.map(({ p, streak }) => (
               <li key={p.id}>
                 <Link href={`/players/${p.id}`} className="flex items-center gap-3 rounded-lg hover:bg-foreground/5">
-                  <StoneAvatar name={p.display_name} size={36} />
+                  <StoneAvatar player={p} size={36} />
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{p.display_name}</span>
                   <span className="font-display text-xl font-bold tabular-nums">{streak!.length}</span>
                 </Link>

@@ -115,7 +115,7 @@ describe("activityBoard", () => {
 });
 
 describe("communityStats leaderboards", () => {
-  const base = { bio: null, club_id: null, playing_since: null, created_by: null, created_at: "2026-01-01T00:00:00Z" };
+  const base = { avatar_tone: null, avatar_glyph: null, bio: null, club_id: null, playing_since: null, created_by: null, created_at: "2026-01-01T00:00:00Z" };
   const players = [
     { ...base, id: A, display_name: "A", rank_value: 1, is_guest: false, is_admin: false },
     { ...base, id: B, display_name: "B", rank_value: -3, is_guest: false, is_admin: false },

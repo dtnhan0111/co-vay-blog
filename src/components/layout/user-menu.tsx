@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatRank } from "@/lib/rank";
 
-type Props = { viewer: { id: string; display_name: string; rank_value: number } | null; pendingCount: number };
+type Props = { viewer: { id: string; display_name: string; rank_value: number; avatar_tone: "black" | "white" | null; avatar_glyph: string | null } | null; pendingCount: number };
 
 export function UserMenu({ viewer, pendingCount }: Props) {
   if (!viewer) {
@@ -29,7 +29,7 @@ export function UserMenu({ viewer, pendingCount }: Props) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Tài khoản ${viewer.display_name}`}>
-          <StoneAvatar name={viewer.display_name} size={40} />
+          <StoneAvatar player={viewer} size={40} />
           {pendingCount > 0 && (
             <span className="absolute -top-1 -right-1 grid size-[18px] place-items-center rounded-full bg-wood text-[10px] font-bold text-white ring-2 ring-background">
               {pendingCount}

@@ -62,7 +62,8 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - F6.4 **Bàn cờ hoạt động**: 361 ngày gần nhất xếp trên lưới 19×19 — mỗi giao điểm là một ngày, có quân nếu hôm đó có ván.
 - F6.5 Phân tích: khi cầm Đen vs Trắng, theo cách thắng, địa điểm hay chơi.
 - F6.6 Đối thủ thường gặp → liên kết sang Đối đầu.
-- F6.7 Lịch sử ván. Chủ hồ sơ: sửa thông tin (tên, hạng, CLB, giới thiệu, năm bắt đầu).
+- F6.7 Lịch sử ván. Chủ hồ sơ: sửa thông tin (tên hiển thị, hạng, CLB, giới thiệu, năm bắt đầu) và tuỳ biến avatar quân cờ (màu quân, ký tự khắc).
+- F6.8 Trang chủ hiển thị số kỳ thủ đã tham gia (không tính khách) kèm các gương mặt mới nhất, liên kết tới danh bạ.
 
 **F9 · Kỳ phổ SGF**
 - F9.1 Hai người chơi của ván tải file `.sgf` (lúc ghi ván hoặc sau đó), thay hoặc gỡ; người khác không được.

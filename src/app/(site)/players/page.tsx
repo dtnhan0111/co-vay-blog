@@ -19,6 +19,8 @@ export default async function PlayersPage({ searchParams }: { searchParams: Prom
       rank_value: p.rank_value,
       club_id: p.club_id,
       isGuest: p.is_guest,
+      avatar_tone: p.avatar_tone,
+      avatar_glyph: p.avatar_glyph,
       clubName: p.club_id ? (clubMap.get(p.club_id)?.name ?? null) : null,
       games: s.games,
       wins: s.wins,

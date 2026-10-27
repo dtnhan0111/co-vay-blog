@@ -11,7 +11,7 @@ export function MatchListItem({ match: m, perspectiveId, today }: { match: Match
   return (
     <li>
       <Link href={`/matches/${m.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-foreground/5">
-        <StoneAvatar name={opponent.display_name} tone={color === "black" ? "white" : "black"} size={40} />
+        <StoneAvatar player={opponent} tone={color === "black" ? "white" : "black"} size={40} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">
             vs {opponent.display_name}

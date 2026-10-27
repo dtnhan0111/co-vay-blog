@@ -31,6 +31,7 @@ export default async function HomePage() {
           viewer={viewer}
           pendingCount={incoming.length}
           daysSinceLastGame={lastPlayed ? daysBetween(lastPlayed, today) : null}
+          recentMembers={[...players].filter((p) => !p.is_guest).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 6)}
           totals={{
             players: players.filter((p) => !p.is_guest).length,
             matches: matches.length,

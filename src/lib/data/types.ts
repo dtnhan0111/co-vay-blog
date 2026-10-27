@@ -66,7 +66,7 @@ export type NewMatchInput = {
 };
 
 export type PlayerPatch = Partial<
-  Pick<Player, "display_name" | "rank_value" | "club_id" | "bio" | "playing_since">
+  Pick<Player, "display_name" | "rank_value" | "club_id" | "bio" | "playing_since" | "avatar_tone" | "avatar_glyph">
 >;
 
 export class DataError extends Error {

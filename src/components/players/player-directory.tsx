@@ -19,6 +19,8 @@ export type DirectoryEntry = {
   club_id: string | null;
   clubName: string | null;
   isGuest: boolean;
+  avatar_tone: "black" | "white" | null;
+  avatar_glyph: string | null;
   games: number;
   wins: number;
   losses: number;
@@ -135,7 +137,7 @@ export function PlayerDirectory({
             <li key={p.id}>
               <Link href={`/players/${p.id}`} className="wood-card flex h-full flex-col gap-3 p-4 transition-transform hover:-translate-y-0.5">
                 <div className="flex items-center gap-3.5">
-                  <StoneAvatar name={p.display_name} size={64} />
+                  <StoneAvatar player={p} size={64} />
                   <div className="min-w-0">
                     <p className="truncate font-display text-xl leading-tight font-semibold">{p.display_name}</p>
                     <div className="mt-1 flex items-center gap-2">
