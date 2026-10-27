@@ -129,3 +129,82 @@ describe("sgf validation for matches", () => {
     assert.equal(ok.success && ok.data.sgf, null);
   });
 });
+
+import { decodeGibBytes, gibToSgf, looksLikeGib, tygemHandicap } from "./sgf/gib";
+
+const hex = (h: string) => Uint8Array.from(h.match(/../g)!.map((b) => parseInt(b, 16)));
+const enc = (s: string) => new TextEncoder().encode(s);
+
+const GIB = [
+  "\\HS",
+  "\\[GAMEWHITENAME=jimmy (5K)\\]",
+  "\\[GAMEBLACKNAME=Silver Star (8K)\\]",
+  "\\[GAMEINFOMAIN=GBKIND:3,GTYPE:0,GCDT:3,GTIME:60000-0-0,GRLT:0,ZIPSU:40,DUM:0,GONGJE:65,TCNT:3,AUSZ:0\\]",
+  "\\[GAMETAG=S0,R3,D0,G65,W0,Z40,T0-0-60000,C2017:03:16:02:52,I:jimmy\\]",
+  "\\HE",
+  "\\GS",
+  "2 1 0",
+  "4 0 &4",
+  "INI 0 1 3 &4",
+  "STO 0 2 2 15 15",
+  "STO 0 3 1 12 16",
+  "STO 0 4 2 19 19",
+  "\\GE",
+].join("\r\n");
+
+describe("Tygem .gib", () => {
+  it("is recognised by content", () => {
+    assert.equal(looksLikeGib(GIB), true);
+    assert.equal(looksLikeGib("(;SZ[19];B[aa])"), false);
+  });
+
+  it("converts header, handicap, result and moves to SGF", () => {
+    const sgf = gibToSgf(GIB);
+    assert.match(sgf, /PB\[Silver Star\]BR\[8K\]PW\[jimmy\]WR\[5K\]/);
+    assert.match(sgf, /DT\[2017-03-16\]KM\[6\.5\]RE\[B\+4\]HA\[3\]/);
+    assert.match(sgf, /AB\[dp\]\[pd\]\[dd\]/);
+    assert.match(sgf, /;W\[pp\];B\[mq\];W\[\]\)$/);
+  });
+
+  it("replays correctly: handicap stones placed, white moves first, trailing pass", () => {
+    const r = buildReplay(gibToSgf(GIB));
+    assert.equal(r.size, 19);
+    assert.equal(r.moves, 3);
+    assert.equal(r.frames[0].board.filter((v) => v === 1).length, 3);
+    assert.equal(r.frames[1].color, 2);
+    assert.equal(r.frames[3].pass, true);
+    assert.equal(r.info.handicap, 3);
+    assert.equal(describeResult(r.info.result), "Đen thắng 4 điểm");
+  });
+
+  it("uses Tygem handicap positions", () => {
+    assert.deepEqual(tygemHandicap(2), [[3, 15], [15, 3]]);
+    assert.equal(tygemHandicap(9).length, 9);
+    assert.deepEqual(tygemHandicap(5).at(-1), [9, 9]);
+    assert.deepEqual(tygemHandicap(7).at(-1), [9, 9]);
+    assert.equal(new Set(tygemHandicap(9).map(([x, y]) => `${x},${y}`)).size, 9);
+  });
+
+  it("maps resign and timeout result codes", () => {
+    const mk = (grlt: number) => gibToSgf(GIB.replace("GRLT:0,ZIPSU:40", `GRLT:${grlt},ZIPSU:0`).replace(/,W0,Z40,/, ",W0,Z0,"));
+    assert.match(mk(4), /RE\[W\+R\]/);
+    assert.match(mk(7), /RE\[B\+T\]/);
+  });
+
+  it("rejects a file without moves", () => {
+    assert.throws(() => gibToSgf("\\HS\n\\HE\n\\GS\nINI 0 1 0 &4\n\\GE"), /nước đi/);
+  });
+
+  it("decodes UTF-8, EUC-KR, GBK and Big5 names", () => {
+    assert.equal(decodeGibBytes(enc("홍길동 abc")), "홍길동 abc");
+    assert.equal(decodeGibBytes(hex("c8abb1e6b5bf")), "홍길동");
+    assert.equal(decodeGibBytes(hex("cea7c6e5b8dfcad6")), "围棋高手");
+    assert.equal(decodeGibBytes(hex("b3f2b4d1b0aaa4e2")), "圍棋高手");
+  });
+
+  it("escapes SGF special characters in names", () => {
+    const sgf = gibToSgf(GIB.replace("jimmy (5K)", "ji]mmy\\ (5K)"));
+    assert.match(sgf, /PW\[ji\\\]mmy\\\\\]/);
+    assert.doesNotThrow(() => buildReplay(sgf));
+  });
+});

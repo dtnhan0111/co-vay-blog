@@ -49,7 +49,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         <section className="space-y-3">
           <SectionHeading
             title="Tái hiện ván đấu"
-            description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi (hoặc quản trị viên) có thể tải file .sgf lên để mọi người xem lại."}
+            description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi (hoặc quản trị viên) có thể tải file kỳ phổ lên để mọi người xem lại."}
           />
           {match.sgf && (
             <SgfSection

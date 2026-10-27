@@ -15,7 +15,7 @@ import { ApiError, api } from "@/lib/client-api";
 import type { StoneColor, WinMethod } from "@/lib/data/types";
 import { addDays, formatScore } from "@/lib/format";
 import { newMatchSchema, sgfProblem } from "@/lib/validators";
-import { readSgfFile } from "@/lib/sgf/read-file";
+import { RECORD_ACCEPT, SUPPORTED_RECORD_NOTE, readSgfFile } from "@/lib/sgf/read-file";
 import { buildReplay } from "@/lib/sgf/replay";
 import { cn } from "@/lib/utils";
 import { OpponentPicker, type PickerPlayer } from "./opponent-picker";
@@ -436,7 +436,7 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
             <p className="text-right text-[11px] text-muted-foreground">{note.length}/280</p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="sgf">Kỳ phổ .sgf (tuỳ chọn)</Label>
+            <Label htmlFor="sgf">Kỳ phổ (tuỳ chọn)</Label>
             {sgf ? (
               <div className="flex items-center gap-2 rounded-xl border border-input px-3 py-2 text-sm">
                 <FileUp className="size-4 shrink-0 text-muted-foreground" />
@@ -448,9 +448,9 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
                 </button>
               </div>
             ) : (
-              <Input id="sgf" type="file" accept=".sgf,text/plain" onChange={(e) => attachSgf(e.target.files?.[0])} className="h-auto py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-secondary-foreground" />
+              <Input id="sgf" type="file" accept={RECORD_ACCEPT} onChange={(e) => attachSgf(e.target.files?.[0])} className="h-auto py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-secondary-foreground" />
             )}
-            <p className="text-xs text-muted-foreground">Mọi người sẽ xem lại được từng nước. Đối thủ cũng có thể tải kỳ phổ lên sau.</p>
+            <p className="text-xs text-muted-foreground">Mọi người sẽ xem lại được từng nước. Đối thủ cũng có thể tải kỳ phổ lên sau. {SUPPORTED_RECORD_NOTE}</p>
             {errors.sgf && <p className="text-xs font-medium text-loss">{errors.sgf}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
