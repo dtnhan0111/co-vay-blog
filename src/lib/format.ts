@@ -98,3 +98,13 @@ export function outcomePhrase(
   if (m.win_method === "resign") return won ? "thắng vì đối thủ bỏ cuộc" : "thua vì bỏ cuộc";
   return won ? "thắng do đối thủ hết giờ" : "thua do hết giờ";
 }
+
+/** "vừa xong", "5 phút trước", "3 giờ trước", "hôm qua", "12 thg 5". Dùng cho dấu thời gian đầy đủ (ISO). */
+export function timeAgo(iso: string, now: number = Date.now()): string {
+  const minutes = Math.round((now - Date.parse(iso)) / 60_000);
+  if (minutes < 1) return "vừa xong";
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  return relativeDay(todayVN(new Date(iso)), todayVN(new Date(now)));
+}

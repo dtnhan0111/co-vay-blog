@@ -27,6 +27,19 @@ export type MatchView = MatchRow & {
   sgf: string | null;
 };
 
+/** Một bình luận trên kỳ phổ của ván, đã ghép tác giả và lượt "đặt một quân". */
+export type CommentView = {
+  id: string;
+  match_id: string;
+  body: string;
+  /** Gắn với nước thứ mấy của kỳ phổ (null = bình luận chung). */
+  move_number: number | null;
+  created_at: string;
+  author: Player;
+  like_count: number;
+  liked_by_me: boolean;
+};
+
 export type MatchQuery = {
   status?: MatchStatus;
   playerId?: string;
@@ -93,6 +106,13 @@ export interface Repository {
   /** Hai người chơi thêm / thay (chuỗi) hoặc gỡ (null) kỳ phổ SGF của ván. */
   setMatchSgf(matchId: string, viewerId: string, sgf: string | null): Promise<void>;
   toggleKudos(matchId: string, viewerId: string): Promise<{ active: boolean; count: number }>;
+
+  /** Bình luận của ván, cũ → mới. */
+  listComments(matchId: string): Promise<CommentView[]>;
+  addComment(matchId: string, viewerId: string, input: { body: string; move_number: number | null }): Promise<CommentView>;
+  /** Tác giả hoặc admin xoá. */
+  deleteComment(commentId: string): Promise<void>;
+  toggleCommentLike(commentId: string, viewerId: string): Promise<{ active: boolean; count: number }>;
   updatePlayer(id: string, patch: PlayerPatch): Promise<Player>;
   /** Tạo hồ sơ "khách" cho một đối thủ chưa dùng app. */
   createGuest(input: { display_name: string; rank_value: number }, creatorId: string): Promise<Player>;

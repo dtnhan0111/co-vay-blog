@@ -91,3 +91,8 @@ export const matchesQuery = z.object({
 });
 
 export const sgfBodySchema = z.object({ sgf: z.string().max(MAX_SGF_CHARS, "File kỳ phổ quá lớn (tối đa 200 KB).").nullable() });
+
+export const commentSchema = z.object({
+  body: z.string().trim().min(1, "Hãy viết vài chữ").max(500, "Tối đa 500 ký tự"),
+  move_number: z.number().int().min(0).max(1000).nullish().transform((v) => v ?? null),
+});

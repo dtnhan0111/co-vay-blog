@@ -6,7 +6,7 @@ import { MatchCard } from "@/components/feed/match-card";
 import { IncomingRequestCard, OutgoingCard } from "@/components/match/confirmation-cards";
 import { SectionHeading } from "@/components/go/section-heading";
 import { SgfUpload } from "@/components/sgf/sgf-upload";
-import { SgfViewer } from "@/components/sgf/sgf-viewer";
+import { SgfSection } from "@/components/sgf/sgf-section";
 import { getViewer } from "@/lib/auth";
 import { repo } from "@/lib/data";
 import { longDate, todayVN } from "@/lib/format";
@@ -17,6 +17,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   const [match, viewer] = await Promise.all([repo.getMatch(id), getViewer()]);
   if (!match) notFound();
+  const comments = match.sgf && match.status === "confirmed" ? await repo.listComments(match.id) : [];
 
   const confirmed = match.status === "confirmed";
   const waitingOnMe = !confirmed && match.status === "pending" && match.confirmation?.user_id === viewer?.id;
@@ -50,7 +51,16 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
             title="Tái hiện ván đấu"
             description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi (hoặc quản trị viên) có thể tải file .sgf lên để mọi người xem lại."}
           />
-          {match.sgf && <SgfViewer sgf={match.sgf} blackName={match.black.display_name} whiteName={match.white.display_name} />}
+          {match.sgf && (
+            <SgfSection
+              matchId={match.id}
+              sgf={match.sgf}
+              blackName={match.black.display_name}
+              whiteName={match.white.display_name}
+              comments={comments}
+              viewer={viewer && { id: viewer.id, isAdmin: viewer.is_admin }}
+            />
+          )}
           {canManageSgf && <SgfUpload matchId={match.id} hasSgf={!!match.sgf} boardSize={match.board_size} />}
         </section>
       )}

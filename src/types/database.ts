@@ -196,6 +196,48 @@ export type Database = {
           },
         ];
       };
+      match_comments: {
+        Row: { id: string; match_id: string; user_id: string; body: string; move_number: number | null; created_at: string };
+        Insert: { id?: string; match_id: string; user_id: string; body: string; move_number?: number | null; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["match_comments"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "match_comments_match_id_fkey";
+            columns: ["match_id"];
+            isOneToOne: false;
+            referencedRelation: "matches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "match_comments_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      comment_likes: {
+        Row: { comment_id: string; user_id: string; created_at: string };
+        Insert: { comment_id: string; user_id: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["comment_likes"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "match_comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comment_likes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       kudos: {
         Row: { match_id: string; user_id: string; created_at: string };
         Insert: { match_id: string; user_id: string; created_at?: string };

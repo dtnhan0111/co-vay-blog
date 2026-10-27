@@ -68,6 +68,7 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - F9.1 Hai người chơi của ván tải file `.sgf` (lúc ghi ván hoặc sau đó), thay hoặc gỡ; người khác không được.
 - F9.2 Kỳ phổ công khai cùng ván; trang chi tiết có bàn cờ tái hiện: lùi/tiến từng nước, thanh trượt, phím mũi tên, tự chạy, số quân bắt, lời bình.
 - F9.1b Quản trị viên (`users.is_admin`, chỉ đặt bằng SQL) cũng được thêm / thay / gỡ kỳ phổ của mọi ván.
+- F9.4 Bình luận kỳ phổ: chỉ hiện khi ván có kỳ phổ, thu gọn mặc định; thành viên đăng nhập viết (≤ 500 ký tự), tuỳ chọn gắn với một nước; mỗi bình luận có "Đặt một quân"; tác giả/admin xoá được.
 - F9.3 Kiểm tra khi tải lên: đúng SGF, bàn 9/13/19 và trùng kích thước ván, có nước đi, không đi vào điểm đã có quân, tối đa 200 KB.
 
 **F7 · Đối đầu (Head-to-Head)**

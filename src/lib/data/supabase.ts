@@ -4,6 +4,7 @@ import { USER_PUBLIC_COLUMNS } from "@/types/database";
 import {
   DataError,
   type Club,
+  type CommentView,
   type ConfirmationInfo,
   type MatchQuery,
   type MatchRow,
@@ -72,6 +73,34 @@ function fail(error: { code?: string; message: string }): never {
   if (error.code === "42501") throw new DataError("Bạn không có quyền thực hiện thao tác này.", 403);
   if (error.code === "23514" || error.code === "23502" || error.code === "P0001") throw new DataError(error.message);
   throw new Error(error.message);
+}
+
+const COMMENT_SELECT = "id, match_id, user_id, body, move_number, created_at, comment_likes(user_id)";
+type CommentRow = {
+  id: string;
+  match_id: string;
+  user_id: string;
+  body: string;
+  move_number: number | null;
+  created_at: string;
+  comment_likes: { user_id: string }[] | null;
+};
+
+async function toComment(row: CommentRow): Promise<CommentView> {
+  const [{ players }, viewer] = await Promise.all([loadDirectory(), loadViewer()]);
+  const author = players.find((p) => p.id === row.user_id);
+  if (!author) throw new Error("Không tìm thấy tác giả bình luận.");
+  const likes = row.comment_likes ?? [];
+  return {
+    id: row.id,
+    match_id: row.match_id,
+    body: row.body,
+    move_number: row.move_number,
+    created_at: row.created_at,
+    author,
+    like_count: likes.length,
+    liked_by_me: !!viewer && likes.some((l) => l.user_id === viewer.id),
+  };
 }
 
 export const supabaseRepository: Repository = {
@@ -257,6 +286,61 @@ export const supabaseRepository: Repository = {
     }
 
     const { count } = await supabase.from("kudos").select("match_id", { count: "exact", head: true }).eq("match_id", matchId);
+    return { active, count: count ?? 0 };
+  },
+
+  async listComments(matchId) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("match_comments")
+      .select(COMMENT_SELECT)
+      .eq("match_id", matchId)
+      .order("created_at", { ascending: true })
+      .limit(500);
+    if (error) fail(error);
+    return Promise.all((data as unknown as CommentRow[]).map(toComment));
+  },
+
+  async addComment(matchId, viewerId, input) {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("match_comments")
+      .insert({ match_id: matchId, user_id: viewerId, body: input.body, move_number: input.move_number })
+      .select(COMMENT_SELECT)
+      .single();
+    if (error) {
+      if (error.code === "42501") throw new DataError("Chỉ ván đã xác nhận và có kỳ phổ mới nhận bình luận.", 403);
+      fail(error);
+    }
+    return toComment(data as unknown as CommentRow);
+  },
+
+  async deleteComment(commentId) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("match_comments").delete().eq("id", commentId).select("id");
+    if (error) fail(error);
+    if (!data.length) throw new DataError("Không xoá được bình luận này.", 403);
+  },
+
+  async toggleCommentLike(commentId, viewerId) {
+    const supabase = await createClient();
+    const { data: existing, error } = await supabase
+      .from("comment_likes")
+      .select("comment_id")
+      .eq("comment_id", commentId)
+      .eq("user_id", viewerId)
+      .maybeSingle();
+    if (error) fail(error);
+
+    const active = !existing;
+    const write = active
+      ? await supabase.from("comment_likes").insert({ comment_id: commentId, user_id: viewerId })
+      : await supabase.from("comment_likes").delete().eq("comment_id", commentId).eq("user_id", viewerId);
+    if (write.error) {
+      if (write.error.code === "42501") throw new DataError("Không tìm thấy bình luận này.", 404);
+      fail(write.error);
+    }
+    const { count } = await supabase.from("comment_likes").select("comment_id", { count: "exact", head: true }).eq("comment_id", commentId);
     return { active, count: count ?? 0 };
   },
 

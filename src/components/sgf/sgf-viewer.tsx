@@ -21,18 +21,28 @@ function useReplay(sgf: string): { replay: Replay } | { error: string } {
 }
 
 /** Bàn cờ tái hiện ván đấu từ kỳ phổ SGF: lùi/tiến từng nước, kéo thanh trượt, phím mũi tên, tự chạy. */
-export function SgfViewer({ sgf, blackName, whiteName }: { sgf: string; blackName: string; whiteName: string }) {
+type ViewerProps = {
+  sgf: string;
+  blackName: string;
+  whiteName: string;
+  /** Nước đang xem (0 = thế ban đầu). Do component cha giữ để bình luận nhảy được tới đúng nước. */
+  step: number;
+  onStepChange: (step: number) => void;
+};
+
+export function SgfViewer({ sgf, blackName, whiteName, step, onStepChange }: ViewerProps) {
   const parsed = useReplay(sgf);
   if ("error" in parsed) {
     return <p className="paper-card px-4 py-6 text-center text-sm text-loss">{parsed.error}</p>;
   }
-  return <Player replay={parsed.replay} blackName={blackName} whiteName={whiteName} />;
+  return <Player replay={parsed.replay} blackName={blackName} whiteName={whiteName} step={step} setStep={onStepChange} />;
 }
 
-function Player({ replay, blackName, whiteName }: { replay: Replay; blackName: string; whiteName: string }) {
+function Player({ replay, blackName, whiteName, step: rawStep, setStep: emit }: { replay: Replay; blackName: string; whiteName: string; step: number; setStep: (s: number) => void }) {
   const { size, frames, info } = replay;
   const last = frames.length - 1;
-  const [step, setStep] = useState(0);
+  const step = Math.max(0, Math.min(last, rawStep));
+  const setStep = emit;
   const [playing, setPlaying] = useState(false);
 
   const frame = frames[step];
@@ -46,9 +56,9 @@ function Player({ replay, blackName, whiteName }: { replay: Replay; blackName: s
       setPlaying(false);
       return;
     }
-    const id = setTimeout(() => setStep((s) => Math.min(last, s + 1)), 650);
+    const id = setTimeout(() => emit(Math.min(last, step + 1)), 650);
     return () => clearTimeout(id);
-  }, [playing, step, last]);
+  }, [playing, step, last, emit]);
 
   const go = (to: number) => {
     setPlaying(false);
