@@ -8,8 +8,8 @@ export function ProfileNudge({ playerId }: { playerId: string }) {
     <section className="paper-card flex flex-wrap items-center gap-4 p-4 sm:p-5">
       <UserRoundPen className="size-6 shrink-0 text-wood dark:text-board" />
       <div className="min-w-0 flex-1">
-        <h2 className="font-display text-xl font-semibold">Hoàn thiện hồ sơ của bạn</h2>
-        <p className="text-sm text-muted-foreground">Hồ sơ mới được đặt ở 10 kyu. Chọn đúng hạng và câu lạc bộ để đối thủ nhận ra bạn.</p>
+        <h2 className="font-display text-xl font-semibold">Đặt tên và hạng cho đúng với bạn</h2>
+        <p className="text-sm text-muted-foreground">Tên hiển thị lấy từ tài khoản Google và hạng mặc định là 10 kyu. Chỉnh lại để đối thủ nhận ra bạn.</p>
       </div>
       <Button asChild size="sm">
         <Link href={`/players/${playerId}?edit=1`}>Cập nhật</Link>

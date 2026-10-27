@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Plus, UserRound } from "lucide-react";
+import { LogOut, Pencil, Plus, UserRound } from "lucide-react";
 import { StoneAvatar } from "@/components/go/stone";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +46,11 @@ export function UserMenu({ viewer, pendingCount }: Props) {
         <DropdownMenuItem asChild>
           <Link href={`/players/${viewer.id}`}>
             <UserRound /> Hồ sơ của tôi
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/players/${viewer.id}?edit=1`}>
+            <Pencil /> Đổi tên, hạng, giới thiệu
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
