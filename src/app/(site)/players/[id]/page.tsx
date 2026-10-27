@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MapPin, Plus, Swords } from "lucide-react";
 import { MatchListItem } from "@/components/feed/match-list-item";
 import { ActivityBoard } from "@/components/go/activity-board";
 import { BoardPanel } from "@/components/go/board-panel";
-import { FormStones } from "@/components/go/form-stones";
 import { RankBadge } from "@/components/go/rank-badge";
 import { RatioBar } from "@/components/go/ratio-bar";
 import { SectionHeading } from "@/components/go/section-heading";
-import { StatTile } from "@/components/go/stat-tile";
 import { Stone, StoneAvatar } from "@/components/go/stone";
+import { FrequentOpponents } from "@/components/players/frequent-opponents";
 import { ProfileEditDialog } from "@/components/players/profile-edit-dialog";
+import { RecentForm } from "@/components/players/recent-form";
+import { StatsBand } from "@/components/players/stats-band";
 import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
 import { repo } from "@/lib/data";
-import { METHOD_LABEL, formatScore, percent, relativeDay, todayVN } from "@/lib/format";
+import { METHOD_LABEL, relativeDay, todayVN } from "@/lib/format";
 import { getClubMap, getClubs, getPlayerMap } from "@/lib/queries";
 import { activityBoard, favoriteVenues, playerStats, topOpponents } from "@/lib/stats";
 
@@ -24,17 +24,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: player?.display_name ?? "Kỳ thủ" };
 }
 
+const joinedLabel = (iso: string) => {
+  const [y, m] = iso.slice(0, 7).split("-").map(Number);
+  return `tháng ${m}/${y}`;
+};
+
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ edit?: string }> }) {
   const { id } = await params;
   const { edit } = await searchParams;
   const today = todayVN();
-  const [players, clubMap, clubs, viewer, matches] = await Promise.all([
-    getPlayerMap(),
-    getClubMap(),
-    getClubs(),
-    getViewer(),
-    repo.listMatches({ playerId: id }),
-  ]);
+  const [players, clubMap, clubs, viewer, matches] = await Promise.all([getPlayerMap(), getClubMap(), getClubs(), getViewer(), repo.listMatches({ playerId: id })]);
   const player = players.get(id);
   if (!player) notFound();
 
@@ -42,37 +41,35 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const isMe = viewer?.id === id;
   const canEdit = isMe || (!!viewer && player.is_guest && player.created_by === viewer.id);
   const stats = playerStats(id, matches);
-  const rivals = topOpponents(id, matches, 4);
+  const rivals = topOpponents(id, matches, 5);
   const venues = favoriteVenues(id, matches, 3);
   const years = player.playing_since ? new Date().getFullYear() - player.playing_since : null;
   const given = player.display_name.split(/\s+/).at(-1);
 
-  const streak = stats.currentStreak;
-  const margin =
-    stats.avgWinMargin != null || stats.avgLossMargin != null ? (
-      <>
-        {stats.avgWinMargin != null && <>thắng TB +{formatScore(Math.round(stats.avgWinMargin * 10) / 10)}</>}
-        {stats.avgWinMargin != null && stats.avgLossMargin != null && " · "}
-        {stats.avgLossMargin != null && <>thua TB −{formatScore(Math.round(stats.avgLossMargin * 10) / 10)}</>}
-      </>
-    ) : undefined;
+  // Mỗi quân trong "phong độ" biết mình là ván nào để bấm vào và để đọc được bằng chữ.
+  const byId = new Map(matches.map((m) => [m.id, m]));
+  const form = stats.form.map((f) => {
+    const m = byId.get(f.matchId)!;
+    const opponent = m.black.id === id ? m.white : m.black;
+    return { ...f, label: `${f.won ? "Thắng" : "Thua"} ${opponent.display_name}, ${relativeDay(m.played_on, today).toLowerCase()}` };
+  });
 
   return (
     <div className="space-y-8">
       <BoardPanel className="px-5 py-7 sm:px-9 sm:py-9">
-        <Stone color={player.rank_value % 2 === 0 ? "white" : "black"} size={110} className="pointer-events-none absolute -top-8 -right-8 opacity-25 sm:[--size:190px]!" aria-hidden />
+        <Stone color="black" size={110} className="pointer-events-none absolute -top-8 -right-8 opacity-20 sm:[--size:190px]!" aria-hidden />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
           <StoneAvatar player={player} size={104} labelled className="shadow-xl" />
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-4xl leading-none font-bold sm:text-5xl">{player.display_name}</h1>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <h1 className="min-w-0 text-4xl leading-tight font-bold break-words sm:text-5xl">{player.display_name}</h1>
               <RankBadge rank={player.rank_value} className="border-ink/50 text-ink dark:border-paper/50 dark:text-paper" />
-              {player.is_guest && <span className="rounded-full bg-ink/15 px-2.5 py-0.5 text-xs font-medium dark:bg-paper/15">Khách · chưa dùng app</span>}
+              {player.is_guest && <span className="rounded-full bg-ink/15 px-2.5 py-0.5 text-xs font-medium dark:bg-paper/15">Khách, chưa dùng app</span>}
             </div>
             <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink/80 dark:text-paper/80">
               {club && (
-                <Link href={`/players?club=${club.id}`} className="inline-flex items-center gap-1 underline-offset-4 hover:underline">
-                  <MapPin className="size-3.5" /> {club.name}
+                <Link href={`/players?club=${club.id}`} className="underline-offset-4 hover:underline">
+                  {club.name}
                 </Link>
               )}
               {player.playing_since && (
@@ -81,6 +78,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                   {years ? `, được ${years} năm` : ""}
                 </span>
               )}
+              {!player.is_guest && <span>Vào kỳ quán từ {joinedLabel(player.created_at)}</span>}
             </p>
             {player.bio && <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-ink/90 italic dark:text-paper/90">“{player.bio}”</p>}
             <div className="mt-4 flex flex-wrap gap-2">
@@ -89,14 +87,10 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
               ) : (
                 <>
                   <Button asChild>
-                    <Link href={`/record?opponent=${id}`}>
-                      <Plus /> Ghi ván với {given}
-                    </Link>
+                    <Link href={`/record?opponent=${id}`}>Ghi ván với {given}</Link>
                   </Button>
                   <Button asChild variant="outline" className="border-ink/40 dark:border-paper/40">
-                    <Link href={`/head-to-head?a=${viewer?.id ?? id}&b=${viewer ? id : ""}`}>
-                      <Swords /> {viewer ? "Đối đầu với tôi" : "Đối đầu"}
-                    </Link>
+                    <Link href={`/head-to-head?a=${viewer?.id ?? id}&b=${viewer ? id : ""}`}>{viewer ? "Xem đối đầu với tôi" : "Xem đối đầu"}</Link>
                   </Button>
                 </>
               )}
@@ -106,34 +100,49 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       </BoardPanel>
 
       {stats.games === 0 ? (
-        <div className="paper-card px-6 py-12 text-center">
+        <div className="paper-card flex flex-col items-center gap-3 px-6 py-12 text-center">
+          <div className="flex gap-1.5" aria-hidden>
+            <Stone color="black" size={30} />
+            <Stone color="white" size={30} />
+          </div>
           <p className="font-display text-2xl">Chưa có ván nào được xác nhận</p>
-          <p className="mt-1 text-sm text-muted-foreground">{isMe ? "Ghi ván đầu tiên của bạn và mời đối thủ xác nhận." : `${given} chưa có ván nào trên kỳ phổ.`}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">{isMe ? "Ghi ván đầu tiên của bạn và mời đối thủ xác nhận." : `${given} chưa có ván nào trên kỳ phổ.`}</p>
+          {isMe && (
+            <Button asChild className="mt-1">
+              <Link href="/record">Ghi ván đầu tiên</Link>
+            </Button>
+          )}
         </div>
       ) : (
         <>
-          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatTile label="Số ván" value={stats.games} sub={`${stats.wins} thắng · ${stats.losses} thua`} />
-            <StatTile label="Tỉ lệ thắng" value={percent(stats.winRate)} sub={stats.games < 5 ? "mới có ít ván" : `chuỗi thắng dài nhất ${stats.bestWinStreak}`} />
-            <StatTile
-              label="Chuỗi hiện tại"
-              value={streak ? <>{streak.length}<span className="ml-1 text-lg font-medium">{streak.won ? "thắng" : "thua"}</span></> : "—"}
-              sub={stats.lastPlayedOn ? `ván cuối: ${relativeDay(stats.lastPlayedOn, today).toLowerCase()}` : undefined}
-            />
-            <StatTile label="Chênh lệch điểm" value={stats.avgWinMargin != null ? `+${formatScore(Math.round(stats.avgWinMargin * 10) / 10)}` : "—"} sub={margin} />
-          </section>
+          <StatsBand stats={stats} />
 
-          <section className="grid gap-6 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+          <section className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
             <div className="wood-card space-y-6 p-5 sm:p-6">
               <div className="space-y-3">
-                <h2 className="text-xl font-semibold">Phong độ</h2>
-                <FormStones form={stats.form} size={32} />
-                <p className="text-xs text-muted-foreground">10 ván gần nhất, cũ → mới · T = thắng, B = thua</p>
+                <h2 className="text-xl font-semibold">Phong độ gần đây</h2>
+                <RecentForm form={form} />
               </div>
               <div className="space-y-4 border-t border-border/70 pt-5">
-                <h2 className="text-xl font-semibold">Khi cầm quân…</h2>
-                <RatioBar label={<><Stone color="black" size={16} /> Cầm Đen</>} wins={stats.asBlack.wins} games={stats.asBlack.games} />
-                <RatioBar label={<><Stone color="white" size={16} /> Cầm Trắng</>} wins={stats.asWhite.wins} games={stats.asWhite.games} />
+                <h2 className="text-xl font-semibold">Khi cầm quân</h2>
+                <RatioBar
+                  label={
+                    <>
+                      <Stone color="black" size={16} /> Cầm Đen
+                    </>
+                  }
+                  wins={stats.asBlack.wins}
+                  games={stats.asBlack.games}
+                />
+                <RatioBar
+                  label={
+                    <>
+                      <Stone color="white" size={16} /> Cầm Trắng
+                    </>
+                  }
+                  wins={stats.asWhite.wins}
+                  games={stats.asWhite.games}
+                />
               </div>
               <div className="border-t border-border/70 pt-5">
                 <h2 className="mb-3 text-xl font-semibold">Cách kết thúc</h2>
@@ -143,8 +152,8 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                       <dt className="text-xs text-muted-foreground">{METHOD_LABEL[k]}</dt>
                       <dd className="mt-1 text-sm">
                         <b className="text-win tabular-nums">{stats.byMethod[k].wins}</b>
-                        <span className="text-muted-foreground"> thắng · </span>
-                        <b className="text-loss tabular-nums">{stats.byMethod[k].losses}</b>
+                        <span className="text-muted-foreground"> thắng, </span>
+                        <b className="tabular-nums">{stats.byMethod[k].losses}</b>
                         <span className="text-muted-foreground"> thua</span>
                       </dd>
                     </div>
@@ -162,40 +171,17 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
           <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="wood-card p-5 sm:p-6">
-              <h2 className="text-xl font-semibold">Hay gặp nhau</h2>
-              <ul className="mt-3 space-y-1">
-                {rivals.map((r) => {
-                  const o = players.get(r.opponentId)!;
-                  return (
-                    <li key={r.opponentId}>
-                      <Link
-                        href={`/head-to-head?a=${id}&b=${r.opponentId}`}
-                        className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-foreground/5"
-                      >
-                        <StoneAvatar player={o} size={40} />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium">{o.display_name}</span>
-                          <span className="block text-xs text-muted-foreground">{r.games} ván</span>
-                        </span>
-                        <span className="font-display text-xl font-bold tabular-nums">
-                          {r.wins}–{r.losses}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+              <h2 className="text-xl font-semibold">Đối thủ thường gặp</h2>
+              <p className="mb-2 text-sm text-muted-foreground">Bấm một người để xem hai bên đã đối đầu thế nào.</p>
+              <FrequentOpponents playerId={id} records={rivals} players={players} />
             </div>
             <div className="wood-card p-5 sm:p-6">
               <h2 className="text-xl font-semibold">Hay đánh ở</h2>
               <ul className="mt-3 space-y-3">
                 {venues.map((v) => (
                   <li key={v.location} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate">{v.location}</span>
-                    </span>
-                    <span className="text-muted-foreground tabular-nums">{v.games} ván</span>
+                    <span className="min-w-0 truncate">{v.location}</span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">{v.games} ván</span>
                   </li>
                 ))}
               </ul>

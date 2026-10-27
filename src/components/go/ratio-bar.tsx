@@ -7,8 +7,8 @@ export function RatioBar({ label, wins, games, className }: { label: React.React
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-baseline justify-between gap-3 text-sm">
-        <span className="flex items-center gap-2 font-medium">{label}</span>
-        <span className="text-muted-foreground tabular-nums">
+        <span className="flex min-w-0 items-center gap-2 font-medium">{label}</span>
+        <span className="shrink-0 text-muted-foreground tabular-nums">
           {games ? (
             <>
               <b className="text-foreground">{percent(ratio)}</b> · {wins}/{games} ván

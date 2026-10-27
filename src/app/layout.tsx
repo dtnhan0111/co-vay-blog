@@ -11,9 +11,6 @@ export const metadata: Metadata = {
   title: { default: "Go Đà Nẵng — Kỳ quán số của người chơi cờ Vây", template: "%s · Go Đà Nẵng" },
   description:
     "Sổ kỳ quán cờ Vây Đà Nẵng: mỗi ván được hai người cùng xác nhận. Nhiều năm sau nhìn lại, vẫn biết mình đã gặp ai, thắng ai, thua ai.",
-  icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='12' cy='13' r='10' fill='%23111'/><circle cx='20' cy='19' r='10' fill='%23f8f8f8' stroke='%238b5e3c' stroke-width='1.2'/></svg>",
-  },
 };
 
 export const viewport: Viewport = {

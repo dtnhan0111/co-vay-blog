@@ -53,6 +53,7 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - F5.2 Thẻ ván: hai avatar quân cờ đối diện, người thắng được nhấn nhẹ, câu kể chuyện, địa điểm, ngày, ghi chú.
 - F5.3 Tab lọc: Tất cả · CLB của tôi · Ván của tôi.
 - F5.4 *Đặt một quân* (kudos): mỗi người một lần mỗi ván, có thể thu hồi.
+- F5.6 Dòng "Hoạt động gần đây" gồm ván đã xác nhận, mốc chuỗi thắng và người mới vào; thẻ ván cho thấy rõ ai cầm Đen/Trắng, người thắng đóng dấu triện đỏ.
 - F5.5 Điểm nhấn: "Lật kèo" (thắng người hạng cao hơn), "Thắng đậm" (chênh ≥ 20 điểm).
 
 **F6 · Hồ sơ kỳ thủ (Player Profile)**

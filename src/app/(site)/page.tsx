@@ -1,9 +1,10 @@
 import { ConfirmationTray } from "@/components/match/confirmation-tray";
-import { FeedList } from "@/components/feed/feed-list";
+import { ActivityFeed } from "@/components/feed/activity-feed";
 import { SectionHeading } from "@/components/go/section-heading";
 import { ProfileNudge } from "@/components/home/profile-nudge";
 import { Hero } from "@/components/home/hero";
 import { WeekSidebar } from "@/components/home/week-sidebar";
+import { buildActivityFeed } from "@/lib/activity";
 import { getViewer } from "@/lib/auth";
 import { repo } from "@/lib/data";
 import { addDays, daysBetween, todayVN } from "@/lib/format";
@@ -45,9 +46,9 @@ export default async function HomePage() {
         {viewer && <ConfirmationTray incoming={incoming} outgoing={outgoing} viewerId={viewer.id} />}
 
         <section className="space-y-4">
-          <SectionHeading title="Kỳ phổ cộng đồng" />
-          <FeedList
-            matches={matches.slice(0, 48)}
+          <SectionHeading title="Hoạt động gần đây" />
+          <ActivityFeed
+            events={buildActivityFeed(matches, players)}
             viewer={viewer && { id: viewer.id, club_id: viewer.club_id }}
             today={today}
           />

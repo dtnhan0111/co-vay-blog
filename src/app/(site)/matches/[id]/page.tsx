@@ -65,6 +65,16 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
+      <Link
+        href={`/head-to-head?a=${match.black.id}&b=${match.white.id}`}
+        className="wood-inset flex min-h-12 items-center justify-between gap-3 rounded-2xl px-4 text-sm font-medium"
+      >
+        <span className="min-w-0 truncate">
+          Xem đối đầu giữa {match.black.display_name} và {match.white.display_name}
+        </span>
+        <span aria-hidden>→</span>
+      </Link>
+
       <dl className="paper-card divide-y divide-border/70 text-sm [&>div]:flex [&>div]:justify-between [&>div]:gap-4 [&>div]:px-4 [&>div]:py-3">
         <div>
           <dt className="text-muted-foreground">Ngày đánh</dt>
