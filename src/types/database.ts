@@ -96,6 +96,8 @@ export type Database = {
           recorded_by: string;
           created_at: string;
           resolved_at: string | null;
+          sgf: string | null;
+          has_sgf: boolean;
         };
         Insert: {
           id?: string;
@@ -114,6 +116,7 @@ export type Database = {
           recorded_by: string;
           created_at?: string;
           resolved_at?: string | null;
+          sgf?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["matches"]["Insert"]>;
         Relationships: [

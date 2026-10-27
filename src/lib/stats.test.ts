@@ -24,6 +24,7 @@ function match(over: Partial<MatchRow> & Pick<MatchRow, "black_player" | "white_
     recorded_by: over.black_player,
     created_at: `2026-03-${String(seq).padStart(2, "0")}T10:00:00Z`,
     resolved_at: null,
+    has_sgf: false,
     ...over,
   };
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Minus, Plus } from "lucide-react";
+import { Check, ChevronDown, FileUp, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Stone } from "@/components/go/stone";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApiError, api } from "@/lib/client-api";
 import type { StoneColor, WinMethod } from "@/lib/data/types";
 import { addDays, formatScore } from "@/lib/format";
-import { newMatchSchema } from "@/lib/validators";
+import { newMatchSchema, sgfProblem } from "@/lib/validators";
+import { readSgfFile } from "@/lib/sgf/read-file";
+import { buildReplay } from "@/lib/sgf/replay";
 import { cn } from "@/lib/utils";
 import { OpponentPicker, type PickerPlayer } from "./opponent-picker";
 
@@ -102,6 +104,7 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
   const [sentTo, setSentTo] = useState<{ player: PickerPlayer; confirmed: boolean } | null>(null);
+  const [sgf, setSgf] = useState<{ text: string; name: string; moves: number; size: number } | null>(null);
   const [guests, setGuests] = useState<PickerPlayer[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -129,6 +132,22 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
     setErrors((e) => ({ ...e, score_difference: "" }));
   }
 
+  async function attachSgf(file: File | undefined) {
+    if (!file) return;
+    try {
+      const text = await readSgfFile(file);
+      const problem = sgfProblem(text);
+      if (problem) return void toast.error(problem);
+      const replay = buildReplay(text);
+      setSgf({ text, name: file.name, moves: replay.moves, size: replay.size });
+      setBoardSize(replay.size); // bàn cờ và số quân chấp lấy theo kỳ phổ
+      if (replay.info.handicap) setHandicap(replay.info.handicap);
+      setErrors((e) => ({ ...e, sgf: "" }));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
   function pickClub(id: string) {
     const club = clubs.find((c) => c.id === id)!;
     setClubId(id);
@@ -149,6 +168,7 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
       note: note || null,
       board_size: boardSize,
       handicap,
+      sgf: sgf?.text ?? null,
     };
 
     const next: Record<string, string> = {};
@@ -406,7 +426,7 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
 
       <details className="group wood-inset rounded-2xl">
         <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm font-medium [&::-webkit-details-marker]:hidden">
-          Thêm ghi chú, kích thước bàn, chấp
+          Thêm ghi chú, kỳ phổ, kích thước bàn, chấp
           <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
         <div className="space-y-4 px-4 pt-1 pb-4">
@@ -414,6 +434,24 @@ export function RecordMatchForm({ today, recents, everyone, clubs, defaultLocati
             <Label htmlFor="note">Ghi chú — một câu về ván này</Label>
             <Textarea id="note" rows={2} maxLength={280} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ván giằng co ở góc phải dưới…" />
             <p className="text-right text-[11px] text-muted-foreground">{note.length}/280</p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="sgf">Kỳ phổ .sgf (tuỳ chọn)</Label>
+            {sgf ? (
+              <div className="flex items-center gap-2 rounded-xl border border-input px-3 py-2 text-sm">
+                <FileUp className="size-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate">
+                  {sgf.name}, {sgf.moves} nước, bàn {sgf.size}×{sgf.size}
+                </span>
+                <button type="button" onClick={() => setSgf(null)} aria-label="Bỏ kỳ phổ" className="grid size-7 place-items-center rounded-full hover:bg-foreground/10">
+                  <X className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <Input id="sgf" type="file" accept=".sgf,text/plain" onChange={(e) => attachSgf(e.target.files?.[0])} className="h-auto py-2 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-3 file:py-1 file:text-secondary-foreground" />
+            )}
+            <p className="text-xs text-muted-foreground">Mọi người sẽ xem lại được từng nước. Đối thủ cũng có thể tải kỳ phổ lên sau.</p>
+            {errors.sgf && <p className="text-xs font-medium text-loss">{errors.sgf}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

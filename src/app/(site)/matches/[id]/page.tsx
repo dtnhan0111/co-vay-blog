@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { MatchCard } from "@/components/feed/match-card";
 import { IncomingRequestCard, OutgoingCard } from "@/components/match/confirmation-cards";
+import { SectionHeading } from "@/components/go/section-heading";
+import { SgfUpload } from "@/components/sgf/sgf-upload";
+import { SgfViewer } from "@/components/sgf/sgf-viewer";
 import { getViewer } from "@/lib/auth";
 import { repo } from "@/lib/data";
 import { longDate, todayVN } from "@/lib/format";
@@ -18,11 +21,12 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const confirmed = match.status === "confirmed";
   const waitingOnMe = !confirmed && match.status === "pending" && match.confirmation?.user_id === viewer?.id;
   const recordedByMe = match.recorded_by === viewer?.id;
+  const isPlayer = !!viewer && (match.black.id === viewer.id || match.white.id === viewer.id);
   const recorder = match.recorded_by === match.black.id ? match.black : match.white;
   const responder = match.recorded_by === match.black.id ? match.white : match.black;
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="mx-auto max-w-xl space-y-6">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-4" /> Kỳ phổ
       </Link>
@@ -38,6 +42,17 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
       )}
 
       <MatchCard match={match} signedIn={!!viewer} today={todayVN()} showKudos={confirmed} linkToDetail={false} />
+
+      {(match.sgf || isPlayer) && (
+        <section className="space-y-3">
+          <SectionHeading
+            title="Tái hiện ván đấu"
+            description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi có thể tải file .sgf lên để mọi người xem lại."}
+          />
+          {match.sgf && <SgfViewer sgf={match.sgf} blackName={match.black.display_name} whiteName={match.white.display_name} />}
+          {isPlayer && <SgfUpload matchId={match.id} hasSgf={!!match.sgf} boardSize={match.board_size} />}
+        </section>
+      )}
 
       <dl className="paper-card divide-y divide-border/70 text-sm [&>div]:flex [&>div]:justify-between [&>div]:gap-4 [&>div]:px-4 [&>div]:py-3">
         <div>

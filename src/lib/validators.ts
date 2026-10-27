@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { MAX_RANK, MIN_RANK } from "@/lib/rank";
 import { todayVN, addDays } from "@/lib/format";
+import { MAX_SGF_CHARS, buildReplay } from "@/lib/sgf/replay";
+import { SgfError } from "@/lib/sgf/parse";
 
 /** UUID dạng lỏng: chấp nhận cả id mẫu có xác định (không bắt version/variant như z.uuid()). */
 const id = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "ID không hợp lệ");
@@ -15,6 +17,19 @@ const optionalText = (max: number) =>
     .nullish()
     .transform((v) => (v ? v : null));
 
+/** Kiểm tra kỳ phổ: đọc được, đúng kích thước bàn (nếu biết), có nước đi và nước đi hợp lệ. */
+export function sgfProblem(sgf: string, boardSize?: number): string | null {
+  try {
+    const replay = buildReplay(sgf);
+    if (boardSize && replay.size !== boardSize) {
+      return `Kỳ phổ là bàn ${replay.size}×${replay.size} nhưng ván này ghi bàn ${boardSize}×${boardSize}.`;
+    }
+    return null;
+  } catch (e) {
+    return e instanceof SgfError ? e.message : "Không đọc được file SGF.";
+  }
+}
+
 export const newMatchSchema = z
   .object({
     opponent_id: id,
@@ -28,10 +43,15 @@ export const newMatchSchema = z
     note: optionalText(280),
     board_size: z.union([z.literal(9), z.literal(13), z.literal(19)]).default(19),
     handicap: z.number().int().min(0).max(9).default(0),
+    sgf: z.string().max(MAX_SGF_CHARS, "File kỳ phổ quá lớn (tối đa 200 KB).").nullish().transform((v) => (v ? v : null)),
   })
   .superRefine((v, ctx) => {
     if (v.win_method === "points" && v.score_difference == null) {
       ctx.addIssue({ code: "custom", path: ["score_difference"], message: "Nhập số điểm hơn" });
+    }
+    if (v.sgf) {
+      const problem = sgfProblem(v.sgf, v.board_size);
+      if (problem) ctx.addIssue({ code: "custom", path: ["sgf"], message: problem });
     }
     if (v.played_on > addDays(todayVN(), 1)) {
       ctx.addIssue({ code: "custom", path: ["played_on"], message: "Không thể chọn ngày ở tương lai" });
@@ -69,3 +89,5 @@ export const matchesQuery = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
+
+export const sgfBodySchema = z.object({ sgf: z.string().max(MAX_SGF_CHARS, "File kỳ phổ quá lớn (tối đa 200 KB).").nullable() });

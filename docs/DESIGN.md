@@ -64,6 +64,11 @@ Strava cho cờ Vây: ta không chơi online, ta **ghi lại những ván đã �
 - F6.6 Đối thủ thường gặp → liên kết sang Đối đầu.
 - F6.7 Lịch sử ván. Chủ hồ sơ: sửa thông tin (tên, hạng, CLB, giới thiệu, năm bắt đầu).
 
+**F9 · Kỳ phổ SGF**
+- F9.1 Hai người chơi của ván tải file `.sgf` (lúc ghi ván hoặc sau đó), thay hoặc gỡ; người khác không được.
+- F9.2 Kỳ phổ công khai cùng ván; trang chi tiết có bàn cờ tái hiện: lùi/tiến từng nước, thanh trượt, phím mũi tên, tự chạy, số quân bắt, lời bình.
+- F9.3 Kiểm tra khi tải lên: đúng SGF, bàn 9/13/19 và trùng kích thước ván, có nước đi, không đi vào điểm đã có quân, tối đa 200 KB.
+
 **F7 · Đối đầu (Head-to-Head)**
 - F7.1 Chọn hai kỳ thủ (URL chia sẻ được: `?a=&b=`).
 - F7.2 Tỉ số tổng, thanh giằng co bằng quân cờ, chuỗi hiện tại, chênh lệch điểm trung bình, kết quả theo màu quân.

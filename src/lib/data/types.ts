@@ -2,7 +2,8 @@ import type { Enums, Tables, UserPublicRow } from "@/types/database";
 
 export type Player = UserPublicRow;
 export type Club = Tables<"clubs">;
-export type MatchRow = Tables<"matches">;
+/** Hàng `matches` không kèm nội dung SGF (nặng); chỉ `has_sgf` cho biết ván có kỳ phổ. */
+export type MatchRow = Omit<Tables<"matches">, "sgf">;
 export type MatchStatus = Enums<"match_status">;
 export type WinMethod = Enums<"win_method">;
 export type StoneColor = "black" | "white";
@@ -22,6 +23,8 @@ export type MatchView = MatchRow & {
   kudos_count: number;
   kudosed_by_me: boolean;
   confirmation: ConfirmationInfo | null;
+  /** Nội dung kỳ phổ SGF — chỉ có khi lấy bằng `getMatch` (trang chi tiết). */
+  sgf: string | null;
 };
 
 export type MatchQuery = {
@@ -46,6 +49,7 @@ export type NewMatchInput = {
   note: string | null;
   board_size: 9 | 13 | 19;
   handicap: number;
+  sgf: string | null;
 };
 
 export type PlayerPatch = Partial<
@@ -86,6 +90,8 @@ export interface Repository {
     reason: string | null,
   ): Promise<MatchView>;
   cancelMatch(matchId: string, viewerId: string): Promise<void>;
+  /** Hai người chơi thêm / thay (chuỗi) hoặc gỡ (null) kỳ phổ SGF của ván. */
+  setMatchSgf(matchId: string, viewerId: string, sgf: string | null): Promise<void>;
   toggleKudos(matchId: string, viewerId: string): Promise<{ active: boolean; count: number }>;
   updatePlayer(id: string, patch: PlayerPatch): Promise<Player>;
   /** Tạo hồ sơ "khách" cho một đối thủ chưa dùng app. */

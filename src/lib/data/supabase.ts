@@ -16,9 +16,15 @@ import {
 
 const PAGE = 1000; // giới hạn mặc định của PostgREST
 
-const MATCH_SELECT = "*, kudos(user_id), match_confirmations(user_id, status, reason, responded_at)";
+// Liệt kê cột thay vì "*" để danh sách ván không kéo theo nội dung SGF (tới 200 KB mỗi ván).
+const MATCH_COLUMNS =
+  "id, black_player, white_player, winner, win_method, score_difference, played_on, location, club_id, note, board_size, handicap, status, recorded_by, created_at, resolved_at, has_sgf";
+const RELATIONS = "kudos(user_id), match_confirmations(user_id, status, reason, responded_at)";
+const MATCH_SELECT = `${MATCH_COLUMNS}, ${RELATIONS}`;
+const MATCH_DETAIL_SELECT = `${MATCH_COLUMNS}, sgf, ${RELATIONS}`;
 
 type MatchWithRelations = MatchRow & {
+  sgf?: string | null;
   kudos: { user_id: string }[] | null;
   match_confirmations: ConfirmationInfo | ConfirmationInfo[] | null;
 };
@@ -48,7 +54,7 @@ const loadViewer = cache(async (): Promise<Player | null> => {
 async function toView(row: MatchWithRelations): Promise<MatchView> {
   const [{ players, clubs }, viewer] = await Promise.all([loadDirectory(), loadViewer()]);
   const byId = new Map(players.map((p) => [p.id, p]));
-  const { kudos, match_confirmations, ...match } = row;
+  const { kudos, match_confirmations, sgf, ...match } = row;
   const confirmation = Array.isArray(match_confirmations) ? (match_confirmations[0] ?? null) : match_confirmations;
   return {
     ...match,
@@ -58,6 +64,7 @@ async function toView(row: MatchWithRelations): Promise<MatchView> {
     kudos_count: kudos?.length ?? 0,
     kudosed_by_me: !!viewer && !!kudos?.some((k) => k.user_id === viewer.id),
     confirmation,
+    sgf: sgf ?? null,
   };
 }
 
@@ -109,7 +116,7 @@ export const supabaseRepository: Repository = {
 
   async getMatch(id) {
     const supabase = await createClient();
-    const { data, error } = await supabase.from("matches").select(MATCH_SELECT).eq("id", id).maybeSingle();
+    const { data, error } = await supabase.from("matches").select(MATCH_DETAIL_SELECT).eq("id", id).maybeSingle();
     if (error) fail(error);
     return data ? toView(data as unknown as MatchWithRelations) : null;
   },
@@ -163,6 +170,7 @@ export const supabaseRepository: Repository = {
         note: input.note,
         board_size: input.board_size,
         handicap: input.handicap,
+        sgf: input.sgf,
         recorded_by: recorderId,
       })
       .select("id")
@@ -215,6 +223,20 @@ export const supabaseRepository: Repository = {
       if (!existing) throw new DataError("Không tìm thấy ván này.", 404);
       if (existing.recorded_by !== viewerId) throw new DataError("Chỉ người ghi ván mới có thể huỷ.", 403);
       throw new DataError("Ván đã xác nhận không thể huỷ.", 409);
+    }
+  },
+
+  async setMatchSgf(matchId, viewerId, sgf) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("matches").update({ sgf }).eq("id", matchId).select("id");
+    if (error) fail(error);
+    if (!data.length) {
+      const existing = await this.getMatch(matchId);
+      if (!existing) throw new DataError("Không tìm thấy ván này.", 404);
+      if (existing.black.id !== viewerId && existing.white.id !== viewerId) {
+        throw new DataError("Chỉ hai người chơi của ván này mới được thêm kỳ phổ.", 403);
+      }
+      throw new DataError("Không cập nhật được kỳ phổ.", 403);
     }
   },
 

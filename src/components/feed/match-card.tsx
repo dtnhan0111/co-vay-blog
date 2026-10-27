@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Sparkles } from "lucide-react";
+import { MapPin, ScrollText, Sparkles } from "lucide-react";
 import { StoneAvatar } from "@/components/go/stone";
 import { Badge } from "@/components/ui/badge";
 import type { MatchView } from "@/lib/data/types";
@@ -75,6 +75,11 @@ export function MatchCard({ match: m, signedIn, today, className, showKudos = tr
                 </Badge>
               )}
               {bigWin && <Badge variant="default">Thắng đậm</Badge>}
+              {m.has_sgf && (
+                <Badge variant="outline" title="Ván này có kỳ phổ để xem lại từng nước">
+                  <ScrollText /> Có kỳ phổ
+                </Badge>
+              )}
               {oneSided && (
                 <Badge variant="outline" title="Đối thủ chưa dùng app nên ván được ghi từ một phía">
                   Ghi một phía
