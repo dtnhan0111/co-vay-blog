@@ -44,6 +44,7 @@ export type Database = {
           bio: string | null;
           playing_since: number | null;
           is_guest: boolean;
+          is_admin: boolean;
           created_by: string | null;
           created_at: string;
         };
@@ -57,6 +58,7 @@ export type Database = {
           bio?: string | null;
           playing_since?: number | null;
           is_guest?: boolean;
+          is_admin?: boolean;
           created_by?: string | null;
           created_at?: string;
         };
@@ -219,6 +221,7 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       current_user_id: { Args: Record<PropertyKey, never>; Returns: string | null };
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
     };
     Enums: {
       win_method: "points" | "resign" | "time";
@@ -238,4 +241,4 @@ export type Enums<T extends keyof PublicSchema["Enums"]> = PublicSchema["Enums"]
 /** Các cột của `users` mà client được phép đọc (không gồm email, auth_id). */
 export type UserPublicRow = Omit<Tables<"users">, "email" | "auth_id">;
 export const USER_PUBLIC_COLUMNS =
-  "id, display_name, rank_value, club_id, bio, playing_since, is_guest, created_by, created_at" as const;
+  "id, display_name, rank_value, club_id, bio, playing_since, is_guest, is_admin, created_by, created_at" as const;

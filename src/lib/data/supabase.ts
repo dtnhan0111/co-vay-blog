@@ -233,10 +233,7 @@ export const supabaseRepository: Repository = {
     if (!data.length) {
       const existing = await this.getMatch(matchId);
       if (!existing) throw new DataError("Không tìm thấy ván này.", 404);
-      if (existing.black.id !== viewerId && existing.white.id !== viewerId) {
-        throw new DataError("Chỉ hai người chơi của ván này mới được thêm kỳ phổ.", 403);
-      }
-      throw new DataError("Không cập nhật được kỳ phổ.", 403);
+      throw new DataError("Chỉ hai người chơi của ván này hoặc quản trị viên mới được thêm kỳ phổ.", 403);
     }
   },
 

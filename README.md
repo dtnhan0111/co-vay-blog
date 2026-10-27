@@ -9,7 +9,7 @@ Tài liệu thiết kế (yêu cầu chức năng, user flow, ERD, cấu trúc t
 ## Cài đặt (làm một lần)
 
 1. **Tạo project Supabase** (supabase.com, gói Free là đủ) hoặc chạy local bằng `supabase start`.
-2. **Áp schema:** lần lượt dán từng file trong `supabase/migrations/` (theo thứ tự tên: `…_init.sql`, rồi `…_match_sgf.sql`) vào *SQL Editor* và Run (hoặc `supabase db reset` khi chạy local).
+2. **Áp schema:** lần lượt dán từng file trong `supabase/migrations/` (đúng thứ tự tên: `init`, `match_sgf`, `admin`, `tighten_grants`) vào *SQL Editor* và Run (hoặc `supabase db reset` khi chạy local).
 3. **Bật đăng nhập Google:** *Authentication → Providers → Google*. Tạo OAuth client ở Google Cloud Console (loại *Web application*), dán Client ID/Secret vào Supabase, và thêm *Authorized redirect URI* mà Supabase hiển thị.
 4. **Khai báo URL:** *Authentication → URL Configuration*
    - *Site URL*: địa chỉ site thật, ví dụ `https://co-vay-blog.vercel.app`
@@ -32,6 +32,15 @@ insert into public.clubs (slug, name, description, address, meets_at) values
 
 Thành viên chọn CLB của mình trong *Sửa hồ sơ*. Ô địa điểm khi ghi ván cho chọn nhanh theo danh sách CLB hoặc gõ tự do.
 
+### Quản trị viên
+
+Admin được thêm / thay / gỡ kỳ phổ của **mọi** ván (ngoài hai người chơi). Chỉ đặt được bằng SQL, người dùng không tự phong được:
+
+```sql
+update public.users set is_admin = true
+where auth_id = (select id from auth.users where lower(email) = 'ban@gmail.com');
+```
+
 ### Tạo sẵn hồ sơ cho người chưa đăng nhập (tuỳ chọn)
 
 Đăng nhập Google lần đầu sẽ *nhận* hồ sơ có cùng email (không phân biệt hoa thường), nếu không có thì tạo hồ sơ mới ở hạng 10 kyu. Muốn ghi trước một người sẽ tham gia:
@@ -45,6 +54,7 @@ insert into public.users (display_name, email, rank_value) values ('Họ và tê
 - **Đối thủ là thành viên:** ván ở trạng thái *chờ*, đối thủ nhận lời mời, bấm "Đúng rồi" thì ván lên kỳ phổ và được tính vào thống kê. "Có sai sót" thì ván bị trả lại kèm lý do.
 - **Đối thủ chưa dùng app:** người ghi gõ tên đối thủ, app tạo một **hồ sơ khách** gắn với người ghi. Ván được ghi ngay (không ai xác nhận được) và thẻ ván có nhãn "Ghi một phía". Ván với khách **không tính vào Bảng vàng** để không ai tự bịa khách nhằm nâng thành tích; trên hồ sơ cá nhân thì vẫn hiện. Người tạo khách sửa được tên/hạng của khách đó.
 - **Kỳ phổ SGF:** hai người chơi của ván tải file `.sgf` lên (lúc ghi ván hoặc về sau, trang chi tiết ván), có thể thay hoặc gỡ. Kỳ phổ **công khai** cùng ván: ai mở trang ván cũng tái hiện được từng nước (lùi/tiến, kéo thanh trượt, phím mũi tên, tự chạy, đếm quân bắt, lời bình trong file). Bộ đọc SGF và bộ máy bàn cờ (bắt quân, tự sát) tự viết trong `src/lib/sgf/`, có test; chỉ theo đường chính của cây ván, hỗ trợ bàn 9/13/19, tối đa 200 KB, tự nhận bảng mã CA[...] (GBK, Shift_JIS…). Kỳ phổ phải cùng kích thước bàn với ván. Danh sách ván không tải nội dung SGF, chỉ cột `has_sgf`.
+- **Quyền riêng tư và an toàn dữ liệu:** quyền ghi được cấp **theo từng cột** (migration `tighten_grants`): người chơi chỉ sửa được cột `sgf` của ván, đối thủ chỉ trả lời `status`/`reason`, không ai sửa được người thắng, điểm hay tự đổi vai trò admin. Lưu ý: Supabase tự cấp toàn quyền trên bảng mới, nên mọi bảng mới phải được siết như vậy.
 - **Quyền riêng tư:** email không bao giờ lộ ra client (column-level grant); ván chưa xác nhận chỉ hai người chơi thấy.
 
 ## Kiến trúc ngắn gọn

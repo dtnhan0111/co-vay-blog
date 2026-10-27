@@ -22,6 +22,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const waitingOnMe = !confirmed && match.status === "pending" && match.confirmation?.user_id === viewer?.id;
   const recordedByMe = match.recorded_by === viewer?.id;
   const isPlayer = !!viewer && (match.black.id === viewer.id || match.white.id === viewer.id);
+  const canManageSgf = isPlayer || !!viewer?.is_admin;
   const recorder = match.recorded_by === match.black.id ? match.black : match.white;
   const responder = match.recorded_by === match.black.id ? match.white : match.black;
 
@@ -43,14 +44,14 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       <MatchCard match={match} signedIn={!!viewer} today={todayVN()} showKudos={confirmed} linkToDetail={false} />
 
-      {(match.sgf || isPlayer) && (
+      {(match.sgf || canManageSgf) && (
         <section className="space-y-3">
           <SectionHeading
             title="Tái hiện ván đấu"
-            description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi có thể tải file .sgf lên để mọi người xem lại."}
+            description={match.sgf ? "Xem lại từng nước từ kỳ phổ." : "Chưa có kỳ phổ. Hai người chơi (hoặc quản trị viên) có thể tải file .sgf lên để mọi người xem lại."}
           />
           {match.sgf && <SgfViewer sgf={match.sgf} blackName={match.black.display_name} whiteName={match.white.display_name} />}
-          {isPlayer && <SgfUpload matchId={match.id} hasSgf={!!match.sgf} boardSize={match.board_size} />}
+          {canManageSgf && <SgfUpload matchId={match.id} hasSgf={!!match.sgf} boardSize={match.board_size} />}
         </section>
       )}
 
